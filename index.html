@@ -24,7 +24,6 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   html, body { height: 100%; }
 
   body {
@@ -36,6 +35,7 @@
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    zoom: 1.25;
   }
 
   body::before {
@@ -49,7 +49,6 @@
     z-index: 0;
   }
 
-  /* ── TOP BAR ── */
   .topbar {
     display: flex;
     align-items: center;
@@ -60,9 +59,7 @@
     z-index: 1;
     flex-shrink: 0;
   }
-
   .topbar-left { display: flex; align-items: center; gap: 12px; }
-
   .kindle-icon {
     width: 30px; height: 38px;
     border: 1.5px solid var(--border2);
@@ -87,7 +84,6 @@
     border-radius: 2px;
     background: var(--border2);
   }
-
   .topbar h1 {
     font-family: 'DM Serif Display', serif;
     font-size: 21px;
@@ -96,7 +92,6 @@
     letter-spacing: -0.2px;
   }
   .topbar h1 em { font-style: italic; color: var(--accent); }
-
   .topbar-right { display: flex; align-items: center; gap: 10px; }
 
   .conn-badge {
@@ -110,7 +105,10 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 4px 12px 4px 8px;
+    transition: border-color 0.3s;
   }
+  .conn-badge.ok  { border-color: rgba(94,158,107,0.35); }
+  .conn-badge.err { border-color: rgba(184,94,94,0.35); }
   .conn-badge .dot {
     width: 6px; height: 6px;
     border-radius: 50%;
@@ -118,8 +116,8 @@
     flex-shrink: 0;
     transition: background 0.3s;
   }
-  .conn-badge .dot.ok    { background: var(--ok);   box-shadow: 0 0 5px rgba(94,158,107,0.5); }
-  .conn-badge .dot.err   { background: var(--err); }
+  .conn-badge .dot.ok      { background: var(--ok); box-shadow: 0 0 5px rgba(94,158,107,0.5); }
+  .conn-badge .dot.err     { background: var(--err); }
   .conn-badge .dot.loading { background: var(--warn); animation: blink 0.8s infinite; }
 
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -139,7 +137,6 @@
   }
   .setup-trigger:hover { border-color: var(--accent2); color: var(--accent); background: rgba(201,169,110,0.05); }
 
-  /* ── MAIN ── */
   .main {
     flex: 1;
     display: flex;
@@ -152,7 +149,50 @@
     gap: 1.25rem;
   }
 
-  /* ── PAGE BUTTONS ── */
+  /* CONNECT BUTTON */
+  .connect-row { width: 100%; max-width: 540px; }
+  .btn-connect {
+    width: 100%;
+    height: 48px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-connect::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,169,110,0.07) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-connect:hover { border-color: var(--accent2); color: var(--accent); }
+  .btn-connect:hover::before { opacity: 1; }
+  .btn-connect:active { transform: scale(0.99); }
+  .btn-connect.connecting { border-color: var(--warn); color: var(--warn); cursor: wait; }
+  .btn-connect.connected  { border-color: rgba(94,158,107,0.5); color: var(--ok); }
+  .btn-connect.failed     { border-color: rgba(184,94,94,0.4); color: var(--err); }
+  .btn-connect svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* PAGE BUTTONS */
   .page-controls {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -160,7 +200,6 @@
     width: 100%;
     max-width: 540px;
   }
-
   .page-btn {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -190,26 +229,14 @@
   .page-btn:hover::after { opacity: 1; }
   .page-btn:active { transform: scale(0.97); }
   .page-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
-
   .page-btn .arrow {
     font-family: 'DM Serif Display', serif;
     font-size: 52px;
     line-height: 1;
     color: var(--accent);
   }
-  .page-btn .btn-label {
-    font-size: 11px;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .page-btn .kbd {
-    font-size: 9px;
-    color: var(--text3);
-    background: var(--border);
-    border-radius: 3px;
-    padding: 2px 6px;
-  }
+  .page-btn .btn-label { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+  .page-btn .kbd { font-size: 9px; color: var(--text3); background: var(--border); border-radius: 3px; padding: 2px 6px; }
 
   @keyframes flash {
     0%   { border-color: var(--accent2); box-shadow: 0 0 18px rgba(201,169,110,0.18); }
@@ -217,14 +244,8 @@
   }
   .flash { animation: flash 0.45s ease-out; }
 
-  /* ── ACTION BUTTONS ── */
-  .action-row {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    max-width: 540px;
-  }
-
+  /* ACTION BUTTONS */
+  .action-row { display: flex; gap: 12px; width: 100%; max-width: 540px; }
   .action-btn {
     flex: 1;
     background: var(--surface);
@@ -242,31 +263,12 @@
   }
   .action-btn:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
   .action-btn:active { transform: scale(0.96); }
-  .action-btn svg {
-    width: 18px; height: 18px;
-    stroke: currentColor; fill: none;
-    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .action-btn span {
-    font-size: 9px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    text-align: center;
-    line-height: 1.4;
-  }
+  .action-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .action-btn span { font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase; text-align: center; line-height: 1.4; }
 
-  /* ── LOG ── */
-  .log-wrap {
-    width: 100%;
-    max-width: 540px;
-  }
-  .log-label {
-    font-size: 9px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 6px;
-  }
+  /* LOG */
+  .log-wrap { width: 100%; max-width: 540px; }
+  .log-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
   .log-box {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -281,11 +283,29 @@
     scrollbar-color: var(--border) transparent;
   }
   .log-line { display: flex; gap: 10px; color: var(--text3); }
-  .log-line .t   { color: var(--text3); flex-shrink: 0; }
-  .log-line .ok  { color: var(--ok); }
-  .log-line .err { color: var(--err); }
+  .log-line .t    { color: var(--text3); flex-shrink: 0; }
+  .log-line .ok   { color: var(--ok); }
+  .log-line .err  { color: var(--err); }
+  .log-line .warn { color: var(--warn); }
 
-  /* ── PAGE FOOTER ── */
+  /* CORS WARNING */
+  .cors-warn {
+    width: 100%;
+    max-width: 540px;
+    background: rgba(196,154,74,0.08);
+    border: 1px solid rgba(196,154,74,0.25);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 10px;
+    color: var(--warn);
+    line-height: 1.7;
+    display: none;
+  }
+  .cors-warn.visible { display: block; }
+  .cors-warn strong { color: #d4b06a; }
+  .cors-warn code { font-family: 'DM Mono', monospace; background: rgba(255,255,255,0.07); padding: 1px 4px; border-radius: 3px; }
+
+  /* PAGE FOOTER */
   .page-footer {
     padding: 0.7rem 2rem;
     border-top: 1px solid var(--border);
@@ -300,20 +320,9 @@
     flex-shrink: 0;
   }
 
-  /* ── MODAL OVERLAY ── */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-  }
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; padding: 1.5rem; }
   .overlay.open { display: flex; }
-
-  /* ── SETUP MODAL ── */
   .modal {
     background: var(--surface);
     border: 1px solid var(--border2);
@@ -329,27 +338,11 @@
     top: 0; left: 0; right: 0; height: 1px;
     background: linear-gradient(90deg, transparent, var(--accent2), transparent);
   }
-
   .modal-body { padding: 1.75rem 1.75rem 1.25rem; }
-
-  .modal-body h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-    color: var(--text);
-    margin-bottom: 1.25rem;
-  }
-
+  .modal-body h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; color: var(--text); margin-bottom: 1.25rem; }
   .steps { display: flex; flex-direction: column; }
-
-  .step {
-    display: flex;
-    gap: 12px;
-    padding: 0.9rem 0;
-    border-bottom: 1px solid var(--border);
-  }
+  .step { display: flex; gap: 12px; padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
   .step:last-child { border-bottom: none; padding-bottom: 0; }
-
   .step-num {
     width: 20px; height: 20px;
     border-radius: 50%;
@@ -358,50 +351,14 @@
     font-size: 10px;
     color: var(--accent);
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-    font-weight: 500;
+    flex-shrink: 0; margin-top: 1px; font-weight: 500;
   }
-
-  .step-content strong {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.45;
-    margin-bottom: 4px;
-  }
-  .step-content p {
-    font-size: 11px;
-    color: var(--text3);
-    line-height: 1.6;
-  }
-  .step-content .path {
-    display: inline-block;
-    font-size: 10px;
-    color: var(--text3);
-    margin-top: 5px;
-    padding: 4px 8px;
-    background: var(--surface3);
-    border-radius: 5px;
-    line-height: 1.55;
-  }
-
-  /* ── MODAL CONN AREA ── */
-  .modal-conn {
-    padding: 1.25rem 1.75rem;
-    background: var(--surface2);
-    border-top: 1px solid var(--border);
-  }
-  .modal-conn-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text2);
-    letter-spacing: 0.05em;
-    margin-bottom: 9px;
-  }
+  .step-content strong { display: block; font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.45; margin-bottom: 4px; }
+  .step-content p { font-size: 11px; color: var(--text3); line-height: 1.6; }
+  .step-content .path { display: inline-block; font-size: 10px; color: var(--text3); margin-top: 5px; padding: 4px 8px; background: var(--surface3); border-radius: 5px; line-height: 1.55; }
+  .modal-conn { padding: 1.25rem 1.75rem; background: var(--surface2); border-top: 1px solid var(--border); }
+  .modal-conn-label { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 9px; }
   .modal-input-row { display: flex; gap: 8px; }
-
   input[type="text"] {
     background: var(--surface3);
     border: 1px solid var(--border2);
@@ -418,69 +375,35 @@
     appearance: none;
   }
   input[type="text"]:focus { border-color: var(--accent2); }
-
   .port-wrap { width: 72px; flex-shrink: 0; }
-
-  .modal-hint {
-    font-size: 10px;
-    color: var(--text3);
-    margin-top: 8px;
-    letter-spacing: 0.02em;
-  }
-
-  /* ── MODAL FOOTER ── */
-  .modal-footer {
-    display: flex;
-    gap: 10px;
-    padding: 1rem 1.75rem 1.5rem;
-    background: var(--surface2);
-    border-top: 1px solid var(--border);
-  }
-
+  .modal-hint { font-size: 10px; color: var(--text3); margin-top: 8px; letter-spacing: 0.02em; }
+  .modal-footer { display: flex; gap: 10px; padding: 1rem 1.75rem 1.5rem; background: var(--surface2); border-top: 1px solid var(--border); }
   .btn-save-endpoint {
-    flex: 1;
-    height: 46px;
-    background: var(--ok);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    transition: opacity 0.2s, transform 0.15s;
+    flex: 1; height: 46px;
+    background: var(--ok); border: none; border-radius: 10px;
+    color: #fff; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+    cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s, transform 0.15s;
   }
   .btn-save-endpoint:hover { opacity: 0.88; }
   .btn-save-endpoint:active { transform: scale(0.98); }
-
   .btn-close-modal {
-    height: 46px;
-    padding: 0 20px;
-    background: transparent;
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    color: var(--text2);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    transition: all 0.2s;
-    white-space: nowrap;
+    height: 46px; padding: 0 20px;
+    background: transparent; border: 1px solid var(--border2); border-radius: 10px;
+    color: var(--text2); font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s; white-space: nowrap;
   }
   .btn-close-modal:hover { color: var(--text); background: var(--surface3); }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-left">
     <div class="kindle-icon"></div>
     <h1>KOReader <em>Remote</em></h1>
   </div>
   <div class="topbar-right">
-    <div class="conn-badge">
+    <div class="conn-badge" id="conn-badge">
       <div class="dot" id="dot"></div>
       <span id="conn-text">desconectado</span>
     </div>
@@ -488,8 +411,28 @@
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
+
+  <div class="connect-row">
+    <button class="btn-connect" id="btn-connect" onclick="testConnection()">
+      <svg viewBox="0 0 24 24">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+      <span id="connect-label">Conectar ao KOReader</span>
+    </button>
+  </div>
+
+  <div class="cors-warn" id="cors-warn">
+    <strong>⚠ Mixed Content bloqueado pelo browser</strong><br>
+    Este site está em <strong>HTTPS</strong>, mas o KOReader serve apenas <strong>HTTP</strong>.
+    Navegadores bloqueiam chamadas HTTP de páginas HTTPS por segurança.<br><br>
+    <strong>Solução recomendada:</strong> Salve o <code>index.html</code> e abra-o 
+    diretamente no browser pelo seu PC (<code>file:///</code>) em vez de via HTTPS.
+    Assim não há restrição de Mixed Content.
+  </div>
 
   <div class="page-controls">
     <button class="page-btn" id="btn-prev" onclick="prevPage()">
@@ -505,7 +448,6 @@
   </div>
 
   <div class="action-row">
-
     <button class="action-btn" onclick="send('/event/SetFrontlightState/0','Desligar brilho')">
       <svg viewBox="0 0 24 24">
         <line x1="2" y1="2" x2="22" y2="22"/>
@@ -516,7 +458,6 @@
       </svg>
       <span>Desligar brilho</span>
     </button>
-
     <button class="action-btn" onclick="send('/event/FullRefresh','Atualizar tela')">
       <svg viewBox="0 0 24 24">
         <polyline points="23 4 23 10 17 10"/>
@@ -524,7 +465,6 @@
       </svg>
       <span>Atualizar tela</span>
     </button>
-
     <button class="action-btn" onclick="send('/UIManager/restartKOReader/','Reiniciar app')">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
@@ -532,7 +472,6 @@
       </svg>
       <span>Reiniciar app</span>
     </button>
-
   </div>
 
   <div class="log-wrap">
@@ -544,121 +483,124 @@
 
 </div>
 
-<!-- PAGE FOOTER -->
 <div class="page-footer">
   <span>KOReader HTTP Inspector</span>
-  <span>porta padrão 8080</span>
+  <span>porta padrão 8081</span>
 </div>
 
-<!-- SETUP MODAL -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal" id="modal">
-
     <div class="modal-body">
       <h2>Setup &amp; Endpoint</h2>
       <div class="steps">
-
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-content">
-            <strong>Ative o KOReader HTTP Inspector e ligue-o (a porta padrão é 8080, mas confirme lá).</strong>
+            <strong>Ative o KOReader HTTP Inspector (porta padrão 8081).</strong>
             <span class="path">Menu (4º ícone, pessoa+engrenagem) → Mais ferramentas → KOReader HTTP Inspector</span>
             <p style="margin-top:5px;">Dica: ative "Auto start HTTP server" para iniciar automaticamente.</p>
           </div>
         </div>
-
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-content">
-            <strong>Pegue o IP do Kindle: abra Informações de rede e copie o valor de IP.</strong>
+            <strong>Pegue o IP do Kindle: abra Informações de rede.</strong>
             <span class="path">Menu (3º ícone, engrenagem) → Rede → Informações de rede</span>
           </div>
         </div>
-
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-content">
-            <strong>Digite o IP:Porta abaixo — armazenamos só neste browser.</strong>
+            <strong>Digite o IP:Porta abaixo — salvo só neste browser.</strong>
           </div>
         </div>
-
         <div class="step">
           <div class="step-num">4</div>
           <div class="step-content">
-            <strong>Se seu celular/tablet travar a tela rápido, aumente o tempo de bloqueio para o controle continuar visível.</strong>
+            <strong>⚠ Use este arquivo aberto localmente no PC (file://) para evitar bloqueio de Mixed Content (HTTPS→HTTP).</strong>
           </div>
         </div>
-
       </div>
     </div>
-
     <div class="modal-conn">
       <div class="modal-conn-label">Kindle IP &amp; Porta</div>
       <div class="modal-input-row">
-        <input type="text" id="ip" placeholder="192.168.100.62" autocomplete="off" spellcheck="false" />
+        <input type="text" id="ip" placeholder="192.168.1.100" autocomplete="off" spellcheck="false" />
         <div class="port-wrap">
           <input type="text" id="port" placeholder="8081" autocomplete="off" spellcheck="false" />
         </div>
       </div>
       <div class="modal-hint">Armazenado localmente; nenhum servidor vê isso.</div>
     </div>
-
     <div class="modal-footer">
       <button class="btn-save-endpoint" onclick="saveEndpoint()">Salvar endpoint</button>
       <button class="btn-close-modal" onclick="closeModal()">Fechar</button>
     </div>
-
   </div>
 </div>
 
 <script>
-  // ── Init: load saved config ──
-  (function() {
+  // ─────────────────────────────────────────────────────────────
+  // PROBLEMA PRINCIPAL: Mixed Content
+  // O KOReader serve HTTP puro. Se este HTML estiver hospedado em
+  // HTTPS, o browser bloqueia qualquer chamada para http://.
+  // SOLUÇÃO: abrir o index.html diretamente no PC (file://).
+  //
+  // SOLUÇÃO CORS: usamos mode:'no-cors' no fetch.
+  // Com no-cors o browser envia o request sem checar CORS headers.
+  // A resposta fica "opaca" (não lemos o conteúdo), mas o KOReader
+  // recebe e executa o evento — que é tudo que precisamos.
+  // ─────────────────────────────────────────────────────────────
+
+  const isHttps = location.protocol === 'https:';
+
+  (function init() {
     const ip   = localStorage.getItem('kr_ip');
     const port = localStorage.getItem('kr_port');
     if (ip)   document.getElementById('ip').value   = ip;
     if (port) document.getElementById('port').value = port;
     if (ip) updateBadge('idle', ip);
-    if (!ip) openModal();
+    else openModal();
+    if (isHttps) {
+      document.getElementById('cors-warn').classList.add('visible');
+      log('⚠ Página em HTTPS — Mixed Content bloqueado. Abra o arquivo localmente!', 'warn');
+    }
   })();
 
-  // ── Modal ──
   function openModal()  { document.getElementById('overlay').classList.add('open'); }
   function closeModal() { document.getElementById('overlay').classList.remove('open'); }
-  function overlayClick(e) {
-    if (e.target === document.getElementById('overlay')) closeModal();
-  }
+  function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
   function saveEndpoint() {
     const ip   = document.getElementById('ip').value.trim();
     const port = document.getElementById('port').value.trim();
     if (!ip) { document.getElementById('ip').focus(); return; }
     localStorage.setItem('kr_ip',   ip);
-    localStorage.setItem('kr_port', port || '8080');
+    localStorage.setItem('kr_port', port || '8081');
     updateBadge('idle', ip);
-    log('endpoint salvo · ' + ip + ':' + (port || '8080'), 'ok');
+    log('endpoint salvo · ' + ip + ':' + (port || '8081'), 'ok');
     closeModal();
+    setTimeout(testConnection, 300);
   }
 
-  // ── Connection badge ──
   function updateBadge(state, label) {
-    const dot  = document.getElementById('dot');
-    const text = document.getElementById('conn-text');
+    const dot   = document.getElementById('dot');
+    const text  = document.getElementById('conn-text');
+    const badge = document.getElementById('conn-badge');
     dot.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : state === 'loading' ? ' loading' : '');
+    badge.className = 'conn-badge' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
     text.textContent = label || 'desconectado';
   }
 
-  // ── Base URL ──
   function base() {
     const ip   = localStorage.getItem('kr_ip')   || '';
-    const port = localStorage.getItem('kr_port')  || '8080';
+    const port = localStorage.getItem('kr_port')  || '8081';
     return `http://${ip}:${port}/koreader`;
   }
 
-  // ── Log ──
   function log(msg, cls) {
     const box = document.getElementById('log');
-    const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     if (box.children.length === 1 && box.children[0].textContent.includes('aguardando')) box.innerHTML = '';
     const line = document.createElement('div');
     line.className = 'log-line';
@@ -667,41 +609,70 @@
     box.scrollTop = box.scrollHeight;
   }
 
-  // ── Fetch ──
+  // Teste de conexão usando no-cors
+  // Com no-cors: browser envia o request, KOReader responde, browser retorna
+  // uma "opaque response" (sem corpo visível). Se não jogar exceção = dispositivo alcançável.
+  async function testConnection() {
+    const ip = localStorage.getItem('kr_ip');
+    if (!ip) { openModal(); return; }
+
+    const btn = document.getElementById('btn-connect');
+    const lbl = document.getElementById('connect-label');
+    btn.className = 'btn-connect connecting';
+    lbl.textContent = 'Conectando...';
+    updateBadge('loading', ip);
+    log('⟳ testando conexão com ' + ip + '…');
+
+    const port = localStorage.getItem('kr_port') || '8081';
+    // Usamos GotoViewRel/0 como ping (move 0 páginas = sem efeito)
+    const url = `http://${ip}:${port}/koreader/event/GotoViewRel/0`;
+
+    try {
+      const ctrl  = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      await fetch(url, { mode: 'no-cors', signal: ctrl.signal });
+      clearTimeout(timer);
+      // Opaque response = servidor respondeu = conectado!
+      btn.className = 'btn-connect connected';
+      lbl.textContent = '✓ Conectado';
+      updateBadge('ok', ip);
+      log('conectado a ' + ip, 'ok');
+      setTimeout(() => { btn.className = 'btn-connect'; lbl.textContent = 'Conectar ao KOReader'; }, 4000);
+    } catch(e) {
+      const reason = e.name === 'AbortError' ? 'timeout' : (isHttps ? 'Mixed Content bloqueado (use file://)' : 'sem resposta — verifique IP e porta');
+      btn.className = 'btn-connect failed';
+      lbl.textContent = '✗ Falha';
+      updateBadge('err', ip + ' (erro)');
+      log('falha: ' + reason, 'err');
+      setTimeout(() => { btn.className = 'btn-connect'; lbl.textContent = 'Tentar novamente'; }, 4000);
+    }
+  }
+
+  // Comandos: no-cors = fire-and-forget. Browser envia, não lemos resposta.
+  // O KOReader recebe e executa. Funciona sem CORS headers no servidor!
   async function kfetch(path, label) {
     const ip = localStorage.getItem('kr_ip');
     if (!ip) { openModal(); return false; }
     updateBadge('loading', ip);
     try {
-      await fetch(base() + path, { mode: 'cors', signal: AbortSignal.timeout(4000) });
-      log((label || path) + ' — OK', 'ok');
+      const ctrl  = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      await fetch(base() + path, { mode: 'no-cors', signal: ctrl.signal });
+      clearTimeout(timer);
+      log((label || path) + ' — enviado ✓', 'ok');
       updateBadge('ok', ip);
       return true;
     } catch(e) {
-      const reason = e.name === 'TimeoutError' ? 'timeout' : 'sem resposta';
+      const reason = e.name === 'AbortError' ? 'timeout' : (isHttps ? 'Mixed Content (abra localmente)' : 'sem resposta');
       log((label || path) + ' — ' + reason, 'err');
       updateBadge('err', ip + ' (erro)');
       return false;
     }
   }
 
-  // ── Actions ──
-  async function nextPage() {
-    flash('btn-next');
-    log('→ próxima página');
-    await kfetch('/event/GotoViewRel/1', 'próxima página');
-  }
-
-  async function prevPage() {
-    flash('btn-prev');
-    log('← página anterior');
-    await kfetch('/event/GotoViewRel/-1', 'página anterior');
-  }
-
-  async function send(path, label) {
-    log('⟳ ' + label);
-    await kfetch(path, label);
-  }
+  async function nextPage() { flash('btn-next'); log('→ próxima página'); await kfetch('/event/GotoViewRel/1', 'próxima página'); }
+  async function prevPage() { flash('btn-prev'); log('← página anterior'); await kfetch('/event/GotoViewRel/-1', 'página anterior'); }
+  async function send(path, label) { log('⟳ ' + label); await kfetch(path, label); }
 
   function flash(id) {
     const el = document.getElementById(id);
@@ -710,7 +681,6 @@
     el.classList.add('flash');
   }
 
-  // ── Keyboard shortcuts ──
   document.addEventListener('keydown', e => {
     if (document.getElementById('overlay').classList.contains('open')) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
