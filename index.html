@@ -146,6 +146,89 @@
   }
   .setup-trigger:hover { border-color: var(--accent2); color: var(--accent); background: rgba(201,169,110,0.05); }
 
+  .help-trigger {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    height: 26px;
+    padding: 0 10px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .help-trigger:hover { border-color: rgba(94,158,107,0.5); color: var(--ok); background: rgba(94,158,107,0.05); }
+
+  /* ── HELP MODAL ── */
+  #help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 300; align-items: center; justify-content: center; padding: 1rem; }
+  #help-overlay.open { display: flex; }
+  .help-modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    position: relative;
+  }
+  .help-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ok), transparent);
+    opacity: 0.5;
+  }
+  .help-modal-body { padding: 1.25rem 1.25rem 0.75rem; overflow-y: auto; max-height: 75vh; }
+  .help-modal-body h2 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; font-weight: 400; color: var(--text); margin-bottom: 0.3rem; }
+  .help-modal-body .help-subtitle { font-size: 0.5rem; color: var(--text3); letter-spacing: 0.05em; margin-bottom: 0.9rem; }
+  .help-section { margin-bottom: 0.85rem; }
+  .help-section-title {
+    font-size: 0.5rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .help-section-title.green { color: var(--ok); }
+  .help-steps { display: flex; flex-direction: column; gap: 0; }
+  .help-step { display: flex; gap: 9px; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .help-step:last-child { border-bottom: none; padding-bottom: 0; }
+  .help-step-num {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--surface3); border: 1px solid var(--border2);
+    font-size: 0.45rem; color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .help-step-num.green { color: var(--ok); }
+  .help-step-content { font-size: 0.55rem; color: var(--text2); line-height: 1.55; }
+  .help-step-content .cmd {
+    display: inline-block; font-family: 'DM Mono', monospace;
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 5px; color: var(--accent);
+    font-size: 0.5rem; margin: 2px 0;
+  }
+  .help-warn-box {
+    background: rgba(184,94,94,0.08); border: 1px solid rgba(184,94,94,0.25);
+    border-radius: 6px; padding: 0.5rem 0.65rem;
+    font-size: 0.5rem; color: #c87070; line-height: 1.6; margin-top: 0.6rem;
+  }
+  .help-warn-box strong { color: var(--err); }
+  .help-info-box {
+    background: rgba(94,158,107,0.07); border: 1px solid rgba(94,158,107,0.2);
+    border-radius: 6px; padding: 0.5rem 0.65rem;
+    font-size: 0.5rem; color: #7db87a; line-height: 1.6; margin-top: 0.6rem;
+  }
+  .help-modal-footer { display: flex; padding: 0.75rem 1.25rem 1rem; background: var(--surface2); border-top: 1px solid var(--border); }
+  .btn-close-help {
+    flex: 1; height: 38px;
+    background: transparent; border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text2); font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s;
+  }
+  .btn-close-help:hover { color: var(--text); background: var(--surface3); }
+
   /* ── MAIN ── */
   .main {
     flex: 1;
@@ -297,25 +380,36 @@
   .action-btn span { font-size: 0.45rem; letter-spacing: 0.07em; text-transform: uppercase; text-align: center; line-height: 1.3; }
 
   /* ── LOG ── */
-  .log-wrap { width: 100%; max-width: 460px; }
-  .log-label { font-size: 0.45rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
-  .log-box {
+  .log-wrap {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    border-left: 1px solid var(--border);
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    height: 52px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    padding: 0.6rem 0.75rem;
+  }
+  .log-label { font-size: 0.45rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; flex-shrink: 0; }
+  .log-box {
+    flex: 1;
     overflow-y: auto;
-    font-size: 0.5rem;
-    line-height: 1.8;
+    font-size: 0.45rem;
+    line-height: 1.9;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
-  .log-line { display: flex; gap: 8px; color: var(--text3); }
+  .log-line { display: flex; gap: 6px; color: var(--text3); flex-wrap: wrap; }
   .log-line .t    { color: var(--text3); flex-shrink: 0; }
-  .log-line .ok   { color: var(--ok); }
-  .log-line .err  { color: var(--err); }
-  .log-line .warn { color: var(--warn); }
+  .log-line .ok   { color: var(--ok); word-break: break-word; }
+  .log-line .err  { color: var(--err); word-break: break-word; }
+  .log-line .warn { color: var(--warn); word-break: break-word; }
+
+  /* push main content left so it doesn't overlap the log panel */
+  body { padding-right: 200px; }
 
   /* ── MIXED CONTENT WARN ── */
   .cors-warn {
@@ -437,6 +531,7 @@
       <span id="conn-text">desconectado</span>
     </div>
     <button class="setup-trigger" onclick="openModal()">configurar</button>
+    <button class="help-trigger" onclick="openHelp()">? ajuda</button>
   </div>
 </div>
 
@@ -498,18 +593,18 @@
     </button>
   </div>
 
-  <div class="log-wrap">
-    <div class="log-label">Log de eventos</div>
-    <div class="log-box" id="log">
-      <div class="log-line"><span class="t">--:--</span><span>aguardando ações...</span></div>
-    </div>
-  </div>
+</div>
 
+<!-- LOG LATERAL -->
+<div class="log-wrap">
+  <div class="log-label">Log de eventos</div>
+  <div class="log-box" id="log">
+    <div class="log-line"><span class="t">--:--</span><span>aguardando ações...</span></div>
+  </div>
 </div>
 
 <div class="page-footer">
   <span>KOReader HTTP Inspector</span>
-  <span>porta padrão 8081</span>
 </div>
 
 <!-- SETUP MODAL -->
@@ -560,6 +655,84 @@
     <div class="modal-footer">
       <button class="btn-save-endpoint" onclick="saveEndpoint()">Salvar endpoint</button>
       <button class="btn-close-modal" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="help-overlay" onclick="helpOverlayClick(event)">
+  <div class="help-modal">
+    <div class="help-modal-body">
+      <h2>Ajuda &amp; Solução de Problemas</h2>
+      <p class="help-subtitle">Dicas para Firefox e funcionalidades do site</p>
+
+      <div class="help-section">
+        <div class="help-section-title">🔧 Firefox — Liberar Mixed Content (HTTPS → HTTP)</div>
+        <p style="font-size:0.5rem;color:var(--text3);line-height:1.6;margin-bottom:0.5rem;">
+          O Firefox bloqueia chamadas HTTP quando a página está em HTTPS. Siga os passos:
+        </p>
+        <div class="help-steps">
+          <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-content">Na barra de endereço, digite <span class="cmd">about:config</span> e pressione Enter.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-content">Clique em <strong>"Aceitar o risco e continuar"</strong>.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-content">Na caixa de pesquisa, cole: <span class="cmd">security.mixed_content.block_active_content</span></div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">4</div>
+            <div class="help-step-content">Clique no ícone ⇄ à direita para mudar o valor de <strong>true</strong> para <strong>false</strong>.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">5</div>
+            <div class="help-step-content">Recarregue esta página. O KOReader agora pode ser acessado.</div>
+          </div>
+        </div>
+        <div class="help-warn-box">
+          <strong>⚠ Atenção:</strong> Esta configuração vale para <em>todas</em> as páginas no Firefox. Reverta para <strong>true</strong> quando não estiver usando o KOReader Remote.
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title green">📋 Clipboard — Limitação no Firefox</div>
+        <p style="font-size:0.5rem;color:var(--text3);line-height:1.6;margin-bottom:0.5rem;">
+          O botão "Ler Clipboard" usa a Clipboard API. No Firefox via HTTPS, esta API exige permissão explícita do usuário.
+        </p>
+        <div class="help-steps">
+          <div class="help-step">
+            <div class="help-step-num green">1</div>
+            <div class="help-step-content">Clique no botão <strong>"Ler Clipboard"</strong> — o Firefox vai exibir um popup de permissão na barra de endereço.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num green">2</div>
+            <div class="help-step-content">Clique em <strong>"Permitir"</strong> no popup. A permissão fica salva para este site.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num green">3</div>
+            <div class="help-step-content">Se não aparecer popup: vá em <span class="cmd">about:preferences#privacy</span> → Permissões → Clipboard → adicione este site manualmente.</div>
+          </div>
+        </div>
+        <div class="help-info-box">
+          💡 <strong>Dica:</strong> Abrindo via <span class="cmd">file://</span> (duplo clique no arquivo), o clipboard funciona automaticamente sem pedir permissão — tanto no Firefox quanto no Chrome.
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">⚡ Solução mais simples para tudo</div>
+        <p style="font-size:0.5rem;color:var(--text2);line-height:1.7;">
+          Abra o <span class="cmd">index.html</span> com duplo clique no explorador de arquivos.
+          A barra de endereço mostrará <span class="cmd">file:///C:/...</span>.
+          Nesse modo, Mixed Content e permissão de clipboard não existem — funciona 100% em qualquer browser.
+        </p>
+      </div>
+    </div>
+    <div class="help-modal-footer">
+      <button class="btn-close-help" onclick="closeHelp()">Fechar</button>
     </div>
   </div>
 </div>
@@ -743,46 +916,52 @@ function flash(id) {
   el.classList.add('flash');
 }
 
+function openHelp()  { document.getElementById('help-overlay').classList.add('open'); }
+function closeHelp() { document.getElementById('help-overlay').classList.remove('open'); }
+function helpOverlayClick(e) { if (e.target === document.getElementById('help-overlay')) closeHelp(); }
+
 // ── CLIPBOARD (Ctrl+C do PC) ───────────────────────────────────────────────────
 // Lê o conteúdo do clipboard e exibe no log.
-// No Firefox, o primeiro acesso pode exigir permissão — o browser mostrará
-// um popup de permissão automático na primeira chamada a readText().
+// LIMITAÇÃO FIREFOX: quando em HTTPS, o Firefox exige permissão explícita via popup.
+// Se negada, instruções estão no botão "? ajuda" ao lado de "configurar".
+// Solução definitiva: abrir via file:// (duplo clique no arquivo).
 function readClipboard() {
   const btn = document.getElementById('btn-clipboard');
   btn.style.borderColor = 'var(--accent2)';
   btn.style.color = 'var(--accent)';
-  setTimeout(function() {
-    btn.style.borderColor = '';
-    btn.style.color = '';
-  }, 600);
+  setTimeout(function() { btn.style.borderColor = ''; btn.style.color = ''; }, 600);
 
+  // Tenta pedir permissão explicitamente antes de ler (funciona em Firefox + Chrome)
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'clipboard-read' }).then(function(result) {
+      if (result.state === 'denied') {
+        log('🔒 Clipboard bloqueado — veja "? ajuda" para liberar', 'err');
+        return;
+      }
+      doReadClipboard();
+    }).catch(function() {
+      // Firefox pode não suportar query de clipboard-read — tenta direto
+      doReadClipboard();
+    });
+  } else {
+    doReadClipboard();
+  }
+}
+
+function doReadClipboard() {
   if (!navigator.clipboard || !navigator.clipboard.readText) {
-    log('Clipboard API não disponível neste browser', 'err');
+    log('Clipboard API indisponível — use Chrome ou file://', 'err');
     return;
   }
-
   navigator.clipboard.readText().then(function(text) {
-    if (!text) {
-      log('Clipboard vazio', 'warn');
-      return;
-    }
-    const preview = text.length > 60 ? text.substring(0, 60) + '…' : text;
-    log('📋 Clipboard: ' + preview, 'ok');
+    if (!text || !text.trim()) { log('Clipboard vazio', 'warn'); return; }
+    const preview = text.length > 80 ? text.substring(0, 80) + '…' : text;
+    log('📋 ' + preview, 'ok');
   }).catch(function(err) {
     if (err.name === 'NotAllowedError') {
-      log('🔒 Permissão negada — clique em "Permitir" quando o Firefox pedir', 'warn');
-      // Tenta novamente após 500ms — no Firefox, a 2ª tentativa
-      // pode acionar o popup de permissão de acesso ao clipboard
-      setTimeout(function() {
-        navigator.clipboard.readText().then(function(text) {
-          const preview = text.length > 60 ? text.substring(0, 60) + '…' : text;
-          log('📋 Clipboard: ' + preview, 'ok');
-        }).catch(function() {
-          log('Permissão permanentemente negada. Vá em: about:preferences#privacy → Permissões', 'err');
-        });
-      }, 500);
+      log('🔒 Permissão negada — clique "? ajuda" para resolver', 'warn');
     } else {
-      log('Erro ao ler clipboard: ' + err.message, 'err');
+      log('Clipboard: ' + err.message, 'err');
     }
   });
 }
@@ -808,6 +987,7 @@ function readClipboard() {
 // ── TECLADO ───────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if (document.getElementById('overlay').classList.contains('open')) return;
+  if (document.getElementById('help-overlay').classList.contains('open')) { if (e.key === 'Escape') closeHelp(); return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextPage();
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevPage();
   if (e.key === 'Escape') closeModal();
