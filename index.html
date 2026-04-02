@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOReader Remote</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #232220;
+    --surface3: #2a2926;
+    --border: #2e2d2a;
+    --border2: #3d3c38;
+    --text: #e8e4db;
+    --text2: #8a8680;
+    --text3: #56544f;
+    --accent: #c9a96e;
+    --accent2: #8b6b3a;
+    --ok: #5e9e6b;
+    --err: #b85e5e;
+    --warn: #c49a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% -5%, rgba(201,169,110,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 30% at 85% 90%, rgba(201,169,110,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+  .kindle-icon {
+    width: 30px; height: 38px;
+    border: 1.5px solid var(--border2);
+    border-radius: 4px;
+    position: relative;
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .kindle-icon::before {
+    content: '';
+    position: absolute;
+    top: 4px; left: 4px; right: 4px; bottom: 10px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+  }
+  .kindle-icon::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; left: 50%;
+    transform: translateX(-50%);
+    width: 9px; height: 3px;
+    border-radius: 2px;
+    background: var(--border2);
+  }
+
+  .topbar h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 21px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+  .topbar h1 em { font-style: italic; color: var(--accent); }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .conn-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px 4px 8px;
+  }
+  .conn-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border2);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .conn-badge .dot.ok    { background: var(--ok);   box-shadow: 0 0 5px rgba(94,158,107,0.5); }
+  .conn-badge .dot.err   { background: var(--err); }
+  .conn-badge .dot.loading { background: var(--warn); animation: blink 0.8s infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .setup-trigger {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    height: 32px;
+    padding: 0 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .setup-trigger:hover { border-color: var(--accent2); color: var(--accent); background: rgba(201,169,110,0.05); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    gap: 1.25rem;
+  }
+
+  /* ── PAGE BUTTONS ── */
+  .page-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .page-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 2.75rem 1rem;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+    font-family: 'DM Mono', monospace;
+  }
+  .page-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(201,169,110,0.09) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .page-btn:hover { border-color: var(--accent2); background: rgba(201,169,110,0.03); }
+  .page-btn:hover::after { opacity: 1; }
+  .page-btn:active { transform: scale(0.97); }
+  .page-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+
+  .page-btn .arrow {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .page-btn .btn-label {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .page-btn .kbd {
+    font-size: 9px;
+    color: var(--text3);
+    background: var(--border);
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+
+  @keyframes flash {
+    0%   { border-color: var(--accent2); box-shadow: 0 0 18px rgba(201,169,110,0.18); }
+    100% { border-color: var(--border);  box-shadow: none; }
+  }
+  .flash { animation: flash 0.45s ease-out; }
+
+  /* ── ACTION BUTTONS ── */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .action-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 1.1rem 0.5rem;
+    transition: all 0.15s;
+    font-family: 'DM Mono', monospace;
+  }
+  .action-btn:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+  .action-btn:active { transform: scale(0.96); }
+  .action-btn svg {
+    width: 18px; height: 18px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .action-btn span {
+    font-size: 9px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ── LOG ── */
+  .log-wrap {
+    width: 100%;
+    max-width: 540px;
+  }
+  .log-label {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .log-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    min-height: 54px;
+    max-height: 96px;
+    overflow-y: auto;
+    font-size: 10px;
+    line-height: 1.8;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .log-line { display: flex; gap: 10px; color: var(--text3); }
+  .log-line .t   { color: var(--text3); flex-shrink: 0; }
+  .log-line .ok  { color: var(--ok); }
+  .log-line .err { color: var(--err); }
+
+  /* ── PAGE FOOTER ── */
+  .page-footer {
+    padding: 0.7rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  /* ── MODAL OVERLAY ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .overlay.open { display: flex; }
+
+  /* ── SETUP MODAL ── */
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 430px;
+    overflow: hidden;
+    position: relative;
+  }
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  }
+
+  .modal-body { padding: 1.75rem 1.75rem 1.25rem; }
+
+  .modal-body h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+
+  .steps { display: flex; flex-direction: column; }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    font-size: 10px;
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-weight: 500;
+  }
+
+  .step-content strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.45;
+    margin-bottom: 4px;
+  }
+  .step-content p {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.6;
+  }
+  .step-content .path {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 5px;
+    padding: 4px 8px;
+    background: var(--surface3);
+    border-radius: 5px;
+    line-height: 1.55;
+  }
+
+  /* ── MODAL CONN AREA ── */
+  .modal-conn {
+    padding: 1.25rem 1.75rem;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+  }
+  .modal-conn-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+    margin-bottom: 9px;
+  }
+  .modal-input-row { display: flex; gap: 8px; }
+
+  input[type="text"] {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    height: 44px;
+    width: 100%;
+    padding: 0 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="text"]:focus { border-color: var(--accent2); }
+
+  .port-wrap { width: 72px; flex-shrink: 0; }
+
+  .modal-hint {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── MODAL FOOTER ── */
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    padding: 1rem 1.75rem 1.5rem;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-save-endpoint {
+    flex: 1;
+    height: 46px;
+    background: var(--ok);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-save-endpoint:hover { opacity: 0.88; }
+  .btn-save-endpoint:active { transform: scale(0.98); }
+
+  .btn-close-modal {
+    height: 46px;
+    padding: 0 20px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-close-modal:hover { color: var(--text); background: var(--surface3); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="kindle-icon"></div>
+    <h1>KOReader <em>Remote</em></h1>
+  </div>
+  <div class="topbar-right">
+    <div class="conn-badge">
+      <div class="dot" id="dot"></div>
+      <span id="conn-text">desconectado</span>
+    </div>
+    <button class="setup-trigger" onclick="openModal()">configurar</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="page-controls">
+    <button class="page-btn" id="btn-prev" onclick="prevPage()">
+      <span class="arrow">←</span>
+      <span class="btn-label">Anterior</span>
+      <span class="kbd">← / ↑</span>
+    </button>
+    <button class="page-btn" id="btn-next" onclick="nextPage()">
+      <span class="arrow">→</span>
+      <span class="btn-label">Próxima</span>
+      <span class="kbd">→ / ↓</span>
+    </button>
+  </div>
+
+  <div class="action-row">
+
+    <button class="action-btn" onclick="send('/event/SetFrontlightState/0','Desligar brilho')">
+      <svg viewBox="0 0 24 24">
+        <line x1="2" y1="2" x2="22" y2="22"/>
+        <path d="M9 9a3 3 0 0 0 4.243 4.243"/>
+        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"/>
+        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42"/>
+        <circle cx="12" cy="12" r="4" stroke-dasharray="2 2"/>
+      </svg>
+      <span>Desligar brilho</span>
+    </button>
+
+    <button class="action-btn" onclick="send('/event/FullRefresh','Atualizar tela')">
+      <svg viewBox="0 0 24 24">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      <span>Atualizar tela</span>
+    </button>
+
+    <button class="action-btn" onclick="send('/UIManager/restartKOReader/','Reiniciar app')">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <polygon points="10 8 16 12 10 16 10 8"/>
+      </svg>
+      <span>Reiniciar app</span>
+    </button>
+
+  </div>
+
+  <div class="log-wrap">
+    <div class="log-label">Log de eventos</div>
+    <div class="log-box" id="log">
+      <div class="log-line"><span class="t">--:--</span><span>aguardando ações...</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PAGE FOOTER -->
+<div class="page-footer">
+  <span>KOReader HTTP Inspector</span>
+  <span>porta padrão 8080</span>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+
+    <div class="modal-body">
+      <h2>Setup &amp; Endpoint</h2>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <strong>Ative o KOReader HTTP Inspector e ligue-o (a porta padrão é 8080, mas confirme lá).</strong>
+            <span class="path">Menu (4º ícone, pessoa+engrenagem) → Mais ferramentas → KOReader HTTP Inspector</span>
+            <p style="margin-top:5px;">Dica: ative "Auto start HTTP server" para iniciar automaticamente.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <strong>Pegue o IP do Kindle: abra Informações de rede e copie o valor de IP.</strong>
+            <span class="path">Menu (3º ícone, engrenagem) → Rede → Informações de rede</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>Digite o IP:Porta abaixo — armazenamos só neste browser.</strong>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <strong>Se seu celular/tablet travar a tela rápido, aumente o tempo de bloqueio para o controle continuar visível.</strong>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-conn">
+      <div class="modal-conn-label">Kindle IP &amp; Porta</div>
+      <div class="modal-input-row">
+        <input type="text" id="ip" placeholder="192.168.100.62" autocomplete="off" spellcheck="false" />
+        <div class="port-wrap">
+          <input type="text" id="port" placeholder="8081" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="modal-hint">Armazenado localmente; nenhum servidor vê isso.</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-save-endpoint" onclick="saveEndpoint()">Salvar endpoint</button>
+      <button class="btn-close-modal" onclick="closeModal()">Fechar</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Init: load saved config ──
+  (function() {
+    const ip   = localStorage.getItem('kr_ip');
+    const port = localStorage.getItem('kr_port');
+    if (ip)   document.getElementById('ip').value   = ip;
+    if (port) document.getElementById('port').value = port;
+    if (ip) updateBadge('idle', ip);
+    if (!ip) openModal();
+  })();
+
+  // ── Modal ──
+  function openModal()  { document.getElementById('overlay').classList.add('open'); }
+  function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+  function overlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function saveEndpoint() {
+    const ip   = document.getElementById('ip').value.trim();
+    const port = document.getElementById('port').value.trim();
+    if (!ip) { document.getElementById('ip').focus(); return; }
+    localStorage.setItem('kr_ip',   ip);
+    localStorage.setItem('kr_port', port || '8080');
+    updateBadge('idle', ip);
+    log('endpoint salvo · ' + ip + ':' + (port || '8080'), 'ok');
+    closeModal();
+  }
+
+  // ── Connection badge ──
+  function updateBadge(state, label) {
+    const dot  = document.getElementById('dot');
+    const text = document.getElementById('conn-text');
+    dot.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : state === 'loading' ? ' loading' : '');
+    text.textContent = label || 'desconectado';
+  }
+
+  // ── Base URL ──
+  function base() {
+    const ip   = localStorage.getItem('kr_ip')   || '';
+    const port = localStorage.getItem('kr_port')  || '8080';
+    return `http://${ip}:${port}/koreader`;
+  }
+
+  // ── Log ──
+  function log(msg, cls) {
+    const box = document.getElementById('log');
+    const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    if (box.children.length === 1 && box.children[0].textContent.includes('aguardando')) box.innerHTML = '';
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="t">${now}</span><span class="${cls||''}">${msg}</span>`;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Fetch ──
+  async function kfetch(path, label) {
+    const ip = localStorage.getItem('kr_ip');
+    if (!ip) { openModal(); return false; }
+    updateBadge('loading', ip);
+    try {
+      await fetch(base() + path, { mode: 'cors', signal: AbortSignal.timeout(4000) });
+      log((label || path) + ' — OK', 'ok');
+      updateBadge('ok', ip);
+      return true;
+    } catch(e) {
+      const reason = e.name === 'TimeoutError' ? 'timeout' : 'sem resposta';
+      log((label || path) + ' — ' + reason, 'err');
+      updateBadge('err', ip + ' (erro)');
+      return false;
+    }
+  }
+
+  // ── Actions ──
+  async function nextPage() {
+    flash('btn-next');
+    log('→ próxima página');
+    await kfetch('/event/GotoViewRel/1', 'próxima página');
+  }
+
+  async function prevPage() {
+    flash('btn-prev');
+    log('← página anterior');
+    await kfetch('/event/GotoViewRel/-1', 'página anterior');
+  }
+
+  async function send(path, label) {
+    log('⟳ ' + label);
+    await kfetch(path, label);
+  }
+
+  function flash(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+
+  // ── Keyboard shortcuts ──
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('overlay').classList.contains('open')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevPage();
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+</body>
+</html>
