@@ -252,7 +252,17 @@
   .step-content p { font-size: 0.55rem; color: var(--text3); line-height: 1.6; }
   .step-content .path { display: inline-block; font-size: 0.5rem; color: var(--text3); margin-top: 4px; padding: 3px 6px; background: var(--surface3); border-radius: 4px; line-height: 1.5; }
   .modal-conn { padding: 0.85rem 1.25rem; background: var(--surface2); border-top: 1px solid var(--border); }
-  .modal-conn-label { font-size: 0.55rem; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 7px; }
+  .modal-conn-label { font-size: 0.55rem; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+  .ip-tip { position: static; display: inline-flex; align-items: center; color: var(--text3); cursor: default; }
+  .ip-tip svg { display: block; }
+  .ip-tip-bubble {
+    display: none; position: fixed; bottom: auto; left: auto;
+    background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text2); font-size: 0.6rem; line-height: 1.7; white-space: normal;
+    width: 220px; padding: 8px 12px; pointer-events: none; z-index: 9999;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .ip-tip:hover .ip-tip-bubble { display: block; }
   .modal-input-row { display: flex; gap: 6px; }
   input[type="text"] {
     background: var(--surface3); border: 1px solid var(--border2); border-radius: 7px;
@@ -440,15 +450,13 @@
     <div class="cors-warn" id="cors-warn"></div>
 
     <div class="page-controls">
-      <button class="page-btn" id="btn-prev" onclick="sendXHR('/event/GotoViewRel/-1','página anterior')">
+      <button class="page-btn" id="btn-prev" onclick="doPrevPage()">
         <span class="arrow">←</span>
         <span class="btn-label">Anterior</span>
-        <span class="kbd">← / ↑</span>
       </button>
-      <button class="page-btn" id="btn-next" onclick="sendXHR('/event/GotoViewRel/1','próxima página')">
+      <button class="page-btn" id="btn-next" onclick="doNextPage()">
         <span class="arrow">→</span>
         <span class="btn-label">Próxima</span>
-        <span class="kbd">→ / ↓</span>
       </button>
     </div>
 
@@ -520,7 +528,13 @@
       </div>
     </div>
     <div class="modal-conn">
-      <div class="modal-conn-label">Kindle IP &amp; Porta</div>
+      <div class="modal-conn-label">
+        Kindle IP &amp; Porta
+        <span class="ip-tip" title="No Kindle: Menu (engrenagem) → Rede → Informações de rede">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+          <span class="ip-tip-bubble">IP disponível em: Menu (engrenagem) → Rede → Informações de rede</span>
+        </span>
+      </div>
       <div class="modal-input-row">
         <input type="text" id="ip" placeholder="192.168.1.100" autocomplete="off" spellcheck="false" inputmode="url"/>
         <div class="port-wrap">
@@ -528,27 +542,6 @@
         </div>
       </div>
       <div class="modal-hint">Armazenado localmente; nenhum servidor externo vê isso.</div>
-    </div>
-    <div class="hotkey-section">
-      <div class="hotkey-section-label">Atalhos de teclado</div>
-      <div class="hotkey-toggle-row">
-        <span class="hotkey-toggle-label">Voltar à aba anterior após virar página</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="toggle-return" onchange="saveHotkeySettings()">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <div class="hotkey-row">
-        <span class="hotkey-desc">▶ Próxima página</span>
-        <input class="hotkey-input" id="hotkey-next" readonly placeholder="Shift+D"
-          onfocus="startRecording(this,'next')" onblur="stopRecording(this)" title="Clique e pressione a tecla">
-      </div>
-      <div class="hotkey-row">
-        <span class="hotkey-desc">◀ Página anterior</span>
-        <input class="hotkey-input" id="hotkey-prev" readonly placeholder="Shift+S"
-          onfocus="startRecording(this,'prev')" onblur="stopRecording(this)" title="Clique e pressione a tecla">
-      </div>
-      <div class="hotkey-hint">Clique no campo e pressione a combinação desejada para reconfigurar.</div>
     </div>
     <div class="modal-footer">
       <button class="btn-save-endpoint" onclick="saveEndpoint()">Salvar endpoint</button>
@@ -763,14 +756,13 @@ function flash(id) {
 }
 
 // ── ATALHOS GLOBAIS ───────────────────────────────────────────────────────────
-// Estrutura: { key: 'D', shift: true, ctrl: false, alt: false }
 let hotkeyNext = { key: 'D', shift: true, ctrl: false, alt: false };
 let hotkeyPrev = { key: 'S', shift: true, ctrl: false, alt: false };
 let returnAfterPage = false;
 let recordingTarget = null; // 'next' | 'prev'
 
 function hotkeyToString(h) {
-  let parts = [];
+  const parts = [];
   if (h.ctrl)  parts.push('Ctrl');
   if (h.alt)   parts.push('Alt');
   if (h.shift) parts.push('Shift');
@@ -779,10 +771,19 @@ function hotkeyToString(h) {
 }
 
 function hotkeyMatches(e, h) {
-  return e.key.toUpperCase() === h.key.toUpperCase()
+  // Normaliza: Shift+D gera e.key='D', mas sem shift seria 'd'
+  const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+  return k === h.key.toUpperCase()
     && !!e.shiftKey === h.shift
     && !!e.ctrlKey  === h.ctrl
     && !!e.altKey   === h.alt;
+}
+
+function updateKbdLabels() {
+  const nEl = document.getElementById('kbd-next');
+  const pEl = document.getElementById('kbd-prev');
+  if (nEl) nEl.textContent = hotkeyToString(hotkeyNext);
+  if (pEl) pEl.textContent = hotkeyToString(hotkeyPrev);
 }
 
 function loadHotkeySettings() {
@@ -793,31 +794,41 @@ function loadHotkeySettings() {
     if (n) hotkeyNext = JSON.parse(n);
     if (p) hotkeyPrev = JSON.parse(p);
     returnAfterPage = r === 'true';
-  } catch(e) {}
-  document.getElementById('hotkey-next').value = hotkeyToString(hotkeyNext);
-  document.getElementById('hotkey-prev').value = hotkeyToString(hotkeyPrev);
-  document.getElementById('toggle-return').checked = returnAfterPage;
+  } catch(ex) {}
+  const ni = document.getElementById('hotkey-next');
+  const pi = document.getElementById('hotkey-prev');
+  if (ni) ni.value = hotkeyToString(hotkeyNext);
+  if (pi) pi.value = hotkeyToString(hotkeyPrev);
+  const tog = document.getElementById('toggle-return');
+  if (tog) tog.checked = returnAfterPage;
+  updateKbdLabels();
 }
 
 function saveHotkeySettings() {
   returnAfterPage = document.getElementById('toggle-return').checked;
   localStorage.setItem('kr_hotkey_next',   JSON.stringify(hotkeyNext));
   localStorage.setItem('kr_hotkey_prev',   JSON.stringify(hotkeyPrev));
-  localStorage.setItem('kr_hotkey_return', returnAfterPage);
+  localStorage.setItem('kr_hotkey_return', String(returnAfterPage));
 }
 
+// Recording: ao clicar no campo, ativa modo captura.
+// Um keydown no document captura a próxima tecla não-modificadora.
 function startRecording(el, target) {
+  // Cancela qualquer recording anterior
+  if (recordingTarget) cancelRecording();
   recordingTarget = target;
   el.classList.add('recording');
-  el.value = 'Pressione...';
+  el.value = 'Pressione a tecla…';
+  el.dataset.recording = '1';
 }
 
-function stopRecording(el) {
-  if (recordingTarget) {
-    el.value = hotkeyToString(recordingTarget === 'next' ? hotkeyNext : hotkeyPrev);
-    el.classList.remove('recording');
-    recordingTarget = null;
-  }
+function cancelRecording() {
+  if (!recordingTarget) return;
+  const id = recordingTarget === 'next' ? 'hotkey-next' : 'hotkey-prev';
+  const h  = recordingTarget === 'next' ? hotkeyNext : hotkeyPrev;
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('recording'); el.value = hotkeyToString(h); delete el.dataset.recording; }
+  recordingTarget = null;
 }
 
 function doNextPage() {
@@ -836,32 +847,57 @@ function doPrevPage() {
 
 // ── TECLADO ───────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
-  // Gravando atalho
+  // ── Modo gravação de atalho ──
   if (recordingTarget) {
     e.preventDefault();
-    const ignoredKeys = ['Shift','Control','Alt','Meta','CapsLock','Tab'];
-    if (ignoredKeys.includes(e.key)) return;
-    const h = { key: e.key.toUpperCase(), shift: e.shiftKey, ctrl: e.ctrlKey, alt: e.altKey };
-    if (recordingTarget === 'next') { hotkeyNext = h; document.getElementById('hotkey-next').value = hotkeyToString(h); }
-    else                            { hotkeyPrev = h; document.getElementById('hotkey-prev').value = hotkeyToString(h); }
-    saveHotkeySettings();
-    const el = document.getElementById(recordingTarget === 'next' ? 'hotkey-next' : 'hotkey-prev');
-    el.classList.remove('recording');
-    el.blur();
+    e.stopPropagation();
+    const ignored = ['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'];
+    if (e.key === 'Escape') { cancelRecording(); return; }
+    if (ignored.includes(e.key)) return;
+
+    const h = {
+      key:   e.key.length === 1 ? e.key.toUpperCase() : e.key,
+      shift: e.shiftKey,
+      ctrl:  e.ctrlKey,
+      alt:   e.altKey
+    };
+    const id = recordingTarget === 'next' ? 'hotkey-next' : 'hotkey-prev';
+    if (recordingTarget === 'next') hotkeyNext = h;
+    else                            hotkeyPrev = h;
+
+    const el = document.getElementById(id);
+    if (el) { el.value = hotkeyToString(h); el.classList.remove('recording'); delete el.dataset.recording; }
     recordingTarget = null;
+    saveHotkeySettings();
+    updateKbdLabels();
     return;
   }
 
-  if (document.getElementById('overlay').classList.contains('open')) return;
-  if (document.getElementById('help-overlay').classList.contains('open')) { if (e.key === 'Escape') closeHelp(); return; }
+  // ── Modais abertos: só Escape ──
+  if (document.getElementById('overlay').classList.contains('open')) {
+    if (e.key === 'Escape') closeModal();
+    return;
+  }
+  if (document.getElementById('help-overlay').classList.contains('open')) {
+    if (e.key === 'Escape') closeHelp();
+    return;
+  }
 
+  // ── Atalhos configurados ──
   if (hotkeyMatches(e, hotkeyNext)) { e.preventDefault(); doNextPage(); return; }
   if (hotkeyMatches(e, hotkeyPrev)) { e.preventDefault(); doPrevPage(); return; }
 
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevPage();
-  if (e.key === 'Escape') closeModal();
+  // ── Setas sempre funcionam ──
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); doNextPage(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); doPrevPage(); }
 });
+  // Posiciona o tooltip do IP dinamicamente para não cortar no modal
+  document.querySelector('.ip-tip').addEventListener('mouseenter', function() {
+    const bubble = this.querySelector('.ip-tip-bubble');
+    const rect = this.getBoundingClientRect();
+    bubble.style.top  = (rect.top - bubble.offsetHeight - 8) + 'px';
+    bubble.style.left = Math.max(8, rect.left - 80) + 'px';
+  });
 </script>
 </body>
 </html>
