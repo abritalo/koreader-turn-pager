@@ -112,7 +112,7 @@
   /* ── LAYOUT ── */
   .app-body {
     flex: 1; display: flex; flex-direction: row;
-    min-height: 0; position: relative; z-index: 1;
+    min-height: 0; position: relative; z-index: 1; overflow: hidden;
   }
 
   /* ── MAIN ── */
@@ -198,12 +198,17 @@
     width: 190px; flex-shrink: 0;
     border-left: 1px solid var(--border); background: var(--surface);
     display: flex; flex-direction: column; padding: 0.6rem 0.7rem; min-height: 0;
+    overflow: hidden;
   }
   .log-label { font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; flex-shrink: 0; }
   .log-box {
-    flex: 1; overflow-y: auto; font-size: 0.75rem; line-height: 1.9;
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    flex: 1; overflow-y: scroll; font-size: 0.75rem; line-height: 1.9;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+    min-height: 0;
   }
+  .log-box::-webkit-scrollbar { width: 4px; }
+  .log-box::-webkit-scrollbar-track { background: transparent; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
   .log-line { display: flex; gap: 5px; color: var(--text3); flex-wrap: wrap; margin-bottom: 1px; }
   .log-line .t    { color: var(--text3); flex-shrink: 0; }
   .log-line .ok   { color: var(--ok); word-break: break-word; }
@@ -397,6 +402,7 @@
     .log-wrap {
       width: 100%; height: 90px; flex-shrink: 0;
       border-left: none; border-top: 1px solid var(--border);
+      overflow: hidden;
     }
     .log-box { font-size: 0.75rem; }
 
@@ -688,9 +694,8 @@ function sendXHR(path, label, onDone) {
     if (done) return;
     done = true;
     xhr.abort();
-    log((label || path) + ' — enviado (timeout ok)', 'ok');
-    updateBadge('ok', ip);
-    if (onDone) onDone(true);
+    log((label || path) + ' — enviado, sem resposta (timeout)', 'err');
+    if (onDone) onDone(false);
   }, 2500);
 
   xhr.onreadystatechange = function() {
@@ -698,8 +703,7 @@ function sendXHR(path, label, onDone) {
     if (xhr.readyState >= 2) {
       done = true;
       clearTimeout(timeout);
-      log((label || path) + ' — OK (' + (xhr.status || '?') + ')', 'ok');
-      updateBadge('ok', ip);
+      log((label || path) + ' — recebido · OK (' + (xhr.status || '?') + ')', 'ok');
       if (onDone) onDone(true);
     }
   };
@@ -710,11 +714,9 @@ function sendXHR(path, label, onDone) {
     clearTimeout(timeout);
     const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
     log((label || path) + ' — erro: ' + reason, 'err');
-    updateBadge('err', ip + ' (erro)');
     if (onDone) onDone(false);
   };
 
-  updateBadge('loading', ip);
   try {
     xhr.open('GET', url, true);
     xhr.send();
@@ -722,7 +724,6 @@ function sendXHR(path, label, onDone) {
     done = true;
     clearTimeout(timeout);
     log((label || path) + ' — exceção: ' + e.message, 'err');
-    updateBadge('err', ip + ' (erro)');
     if (onDone) onDone(false);
   }
 }
@@ -736,19 +737,71 @@ function testConnection() {
   btn.className = 'btn-connect connecting';
   lbl.textContent = 'Conectando...';
   log('⟳ testando ' + ip + '…');
-  sendXHR('/event/GotoViewRel/0', 'ping', function(ok) {
-    if (ok) {
-      btn.className = 'btn-connect connected';
-      lbl.textContent = '✓ Conectado';
-    } else {
-      btn.className = 'btn-connect failed';
-      lbl.textContent = '✗ Falhou — verifique IP e porta';
-    }
+
+  const xhr = new XMLHttpRequest();
+  const url = base() + '/event/GotoViewRel/0';
+  let done = false;
+
+  const timeout = setTimeout(function() {
+    if (done) return;
+    done = true;
+    xhr.abort();
+    log('ping — sem resposta (timeout)', 'err');
+    updateBadge('idle', ip);
+    btn.className = 'btn-connect failed';
+    lbl.textContent = '✗ Falhou — verifique IP e porta';
     setTimeout(function() {
       btn.className = 'btn-connect';
-      lbl.textContent = ok ? 'Reconectar' : 'Tentar novamente';
+      lbl.textContent = 'Tentar novamente';
     }, 3500);
-  });
+  }, 2500);
+
+  xhr.onreadystatechange = function() {
+    if (done) return;
+    if (xhr.readyState >= 2) {
+      done = true;
+      clearTimeout(timeout);
+      log('ping — recebido · OK (' + (xhr.status || '?') + ')', 'ok');
+      updateBadge('ok', ip);
+      btn.className = 'btn-connect connected';
+      lbl.textContent = '✓ Conectado';
+      setTimeout(function() {
+        btn.className = 'btn-connect';
+        lbl.textContent = 'Reconectar';
+      }, 3500);
+    }
+  };
+
+  xhr.onerror = function() {
+    if (done) return;
+    done = true;
+    clearTimeout(timeout);
+    const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
+    log('ping — erro: ' + reason, 'err');
+    updateBadge('idle', ip);
+    btn.className = 'btn-connect failed';
+    lbl.textContent = '✗ Falhou — verifique IP e porta';
+    setTimeout(function() {
+      btn.className = 'btn-connect';
+      lbl.textContent = 'Tentar novamente';
+    }, 3500);
+  };
+
+  try {
+    xhr.open('GET', url, true);
+    xhr.send();
+  } catch(e) {
+    done = true;
+    clearTimeout(timeout);
+    log('ping — exceção: ' + e.message, 'err');
+    updateBadge('idle', ip);
+    btn.className = 'btn-connect failed';
+    lbl.textContent = '✗ Falhou — verifique IP e porta';
+    setTimeout(function() {
+      btn.className = 'btn-connect';
+      lbl.textContent = 'Tentar novamente';
+    }, 3500);
+  }
 }
 
 // ── PÁGINAS ───────────────────────────────────────────────────────────────────
