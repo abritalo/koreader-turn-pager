@@ -195,7 +195,7 @@
 
   /* ── LOG ── */
   .log-wrap {
-    width: 190px; flex-shrink: 0;
+    width: 190px; flex-shrink: 0; max-width: 50%;
     border-left: 1px solid var(--border); background: var(--surface);
     display: flex; flex-direction: column; padding: 0.6rem 0.7rem 0.6rem 0.7rem; min-height: 0;
     overflow: hidden; position: relative;
@@ -403,15 +403,17 @@
   .toggle-switch input:checked + .toggle-slider { background: var(--ok); }
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(14px); background: #fff; }
 
-  /* ── MOBILE ── */
+  /* ── NARROW / MOBILE ── */
   @media (max-width: 600px) {
     .app-body { flex-direction: column; }
 
     .log-wrap {
-      width: 100%; height: 90px; flex-shrink: 0;
+      width: 100% !important; max-width: 100% !important;
+      height: 100px; flex-shrink: 0;
       border-left: none; border-top: 1px solid var(--border);
       overflow: hidden;
     }
+    .log-resizer { display: none; }
     .log-box { font-size: 0.75rem; }
 
     .main { padding: 0.75rem; gap: 0.6rem; justify-content: flex-start; padding-top: 0.9rem; }
@@ -428,6 +430,14 @@
     .action-btn { padding: 0.85rem 0.4rem; }
     .action-btn svg { width: 18px; height: 18px; }
     .action-btn span { font-size: 0.75rem; }
+  }
+
+  /* Janela estreita desktop (minimizada lateral) */
+  @media (min-width: 601px) and (max-width: 750px) {
+    .log-wrap { width: 160px; }
+    .main { padding: 0.75rem; }
+    .page-btn { padding: 1.2rem 0.6rem; }
+    .page-btn .kbd { display: none; }
   }
 
   @media (max-width: 380px) {
@@ -738,6 +748,82 @@ function sendXHR(path, label, onDone) {
 }
 
 // ── CONEXÃO ───────────────────────────────────────────────────────────────────
+let connState = 'idle'; // 'idle' | 'ok' | 'failed'
+let pollTimer = null;
+
+function setConnState(state, ip) {
+  connState = state;
+  const btn = document.getElementById('btn-connect');
+  const lbl = document.getElementById('connect-label');
+  if (state === 'ok') {
+    updateBadge('ok', ip);
+    btn.className = 'btn-connect connected';
+    lbl.textContent = '✓ Conectado';
+  } else if (state === 'failed') {
+    updateBadge('idle', ip);
+    btn.className = 'btn-connect failed';
+    lbl.textContent = 'Falhou — tentar novamente';
+  } else {
+    updateBadge('idle', ip);
+    btn.className = 'btn-connect';
+    lbl.textContent = 'Conectar ao KOReader';
+  }
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(function() {
+    silentPing();
+  }, 8000); // verifica a cada 8s
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// Ping silencioso (sem log) para manter o estado atualizado
+function silentPing() {
+  const ip = localStorage.getItem('kr_ip');
+  if (!ip) return;
+  const xhr = new XMLHttpRequest();
+  const url = base() + '/event/GotoViewRel/0';
+  let done = false;
+  const timeout = setTimeout(function() {
+    if (done) return;
+    done = true;
+    xhr.abort();
+    if (connState === 'ok') {
+      log('ping — conexão perdida (timeout)', 'warn');
+      setConnState('failed', ip);
+    }
+  }, 2500);
+  xhr.onreadystatechange = function() {
+    if (done) return;
+    if (xhr.readyState >= 2) {
+      done = true;
+      clearTimeout(timeout);
+      if (connState !== 'ok') {
+        log('ping — reconectado · OK (' + (xhr.status || '?') + ')', 'ok');
+        setConnState('ok', ip);
+      }
+    }
+  };
+  xhr.onerror = function() {
+    if (done) return;
+    done = true;
+    clearTimeout(timeout);
+    if (connState === 'ok') {
+      const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
+      log('ping — conexão perdida: ' + reason, 'warn');
+      setConnState('failed', ip);
+    }
+  };
+  try { xhr.open('GET', url, true); xhr.send(); } catch(e) {
+    done = true; clearTimeout(timeout);
+    if (connState === 'ok') { log('ping — exceção: ' + e.message, 'warn'); setConnState('failed', ip); }
+  }
+}
+
 function testConnection() {
   const ip = localStorage.getItem('kr_ip');
   if (!ip) { openModal(); return; }
@@ -756,13 +842,8 @@ function testConnection() {
     done = true;
     xhr.abort();
     log('ping — sem resposta (timeout)', 'err');
-    updateBadge('idle', ip);
-    btn.className = 'btn-connect failed';
-    lbl.textContent = 'Falhou';
-    setTimeout(function() {
-      btn.className = 'btn-connect';
-      lbl.textContent = 'Tentar novamente';
-    }, 3500);
+    setConnState('failed', ip);
+    stopPolling();
   }, 2500);
 
   xhr.onreadystatechange = function() {
@@ -771,13 +852,8 @@ function testConnection() {
       done = true;
       clearTimeout(timeout);
       log('ping — recebido · OK (' + (xhr.status || '?') + ')', 'ok');
-      updateBadge('ok', ip);
-      btn.className = 'btn-connect connected';
-      lbl.textContent = '✓ Conectado';
-      setTimeout(function() {
-        btn.className = 'btn-connect';
-        lbl.textContent = 'Reconectar';
-      }, 3500);
+      setConnState('ok', ip);
+      startPolling();
     }
   };
 
@@ -787,13 +863,8 @@ function testConnection() {
     clearTimeout(timeout);
     const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
     log('ping — erro: ' + reason, 'err');
-    updateBadge('idle', ip);
-    btn.className = 'btn-connect failed';
-    lbl.textContent = 'Falhou';
-    setTimeout(function() {
-      btn.className = 'btn-connect';
-      lbl.textContent = 'Tentar novamente';
-    }, 3500);
+    setConnState('failed', ip);
+    stopPolling();
   };
 
   try {
@@ -803,13 +874,8 @@ function testConnection() {
     done = true;
     clearTimeout(timeout);
     log('ping — exceção: ' + e.message, 'err');
-    updateBadge('idle', ip);
-    btn.className = 'btn-connect failed';
-    lbl.textContent = 'Falhou';
-    setTimeout(function() {
-      btn.className = 'btn-connect';
-      lbl.textContent = 'Tentar novamente';
-    }, 3500);
+    setConnState('failed', ip);
+    stopPolling();
   }
 }
 
@@ -976,6 +1042,7 @@ document.addEventListener('keydown', function(e) {
 
   const MIN_W = 120;
   const MAX_W = 600;
+  function effectiveMaxW() { return Math.min(MAX_W, Math.floor(document.body.clientWidth * 0.6)); }
   const STORAGE_KEY = 'kr_log_width';
 
   // Restore saved width
@@ -1002,7 +1069,7 @@ document.addEventListener('keydown', function(e) {
     if (!dragging) return;
     // Log is on the right, dragging left = wider
     const delta = startX - e.clientX;
-    const newW  = Math.min(MAX_W, Math.max(MIN_W, startW + delta));
+    const newW  = Math.min(effectiveMaxW(), Math.max(MIN_W, startW + delta));
     wrap.style.width = newW + 'px';
   });
 
@@ -1028,7 +1095,7 @@ document.addEventListener('keydown', function(e) {
   document.addEventListener('touchmove', function(e) {
     if (!dragging) return;
     const delta = startX - e.touches[0].clientX;
-    const newW  = Math.min(MAX_W, Math.max(MIN_W, startW + delta));
+    const newW  = Math.min(effectiveMaxW(), Math.max(MIN_W, startW + delta));
     wrap.style.width = newW + 'px';
   }, { passive: true });
 
