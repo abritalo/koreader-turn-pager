@@ -171,7 +171,6 @@
   .page-btn:active { transform: scale(0.97); }
   .page-btn .arrow { font-family: 'DM Serif Display', serif; font-size: 2.8rem; line-height: 1; color: var(--accent); }
   .page-btn .btn-label { font-size: 0.75rem; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
-  .page-btn .kbd { font-size: 0.75rem; color: var(--text3); background: var(--border); border-radius: 3px; padding: 2px 5px; }
 
   @keyframes flash {
     0%   { border-color: var(--accent2); box-shadow: 0 0 14px rgba(201,169,110,0.18); }
@@ -197,15 +196,13 @@
   .log-wrap {
     width: 190px; flex-shrink: 0; max-width: 50%;
     border-left: 1px solid var(--border); background: var(--surface);
-    display: flex; flex-direction: column; padding: 0.6rem 0.7rem 0.6rem 0.7rem; min-height: 0;
+    display: flex; flex-direction: column; padding: 0.6rem 0.7rem; min-height: 0;
     overflow: hidden; position: relative;
-    transition: width 0s;
   }
   .log-resizer {
     position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
     cursor: col-resize; z-index: 10;
-    background: transparent;
-    transition: background 0.2s;
+    background: transparent; transition: background 0.2s;
   }
   .log-resizer:hover, .log-resizer.dragging { background: rgba(201,169,110,0.18); }
   .log-label { font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; flex-shrink: 0; user-select: none; }
@@ -222,9 +219,6 @@
   .log-line .ok   { color: var(--ok); word-break: break-word; }
   .log-line .err  { color: var(--err); word-break: break-word; }
   .log-line .warn { color: var(--warn); word-break: break-word; }
-
-  /* ── CORS WARN (oculto) ── */
-  .cors-warn, .cors-warn.visible { display: none; }
 
   /* ── FOOTER ── */
   .page-footer {
@@ -271,17 +265,7 @@
   .step-content p { font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
   .step-content .path { display: inline-block; font-size: 0.75rem; color: var(--text3); margin-top: 4px; padding: 3px 6px; background: var(--surface3); border-radius: 4px; line-height: 1.5; }
   .modal-conn { padding: 0.85rem 1.25rem; background: var(--surface2); border-top: 1px solid var(--border); }
-  .modal-conn-label { font-size: 0.75rem; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
-  .ip-tip { position: static; display: inline-flex; align-items: center; color: var(--text3); cursor: default; }
-  .ip-tip svg { display: block; }
-  .ip-tip-bubble {
-    display: none; position: fixed; bottom: auto; left: auto;
-    background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px;
-    color: var(--text2); font-size: 0.75rem; line-height: 1.7; white-space: normal;
-    width: 220px; padding: 8px 12px; pointer-events: none; z-index: 9999;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-  }
-  .ip-tip:hover .ip-tip-bubble { display: block; }
+  .modal-conn-label { font-size: 0.75rem; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 7px; }
   .modal-input-row { display: flex; gap: 6px; }
   input[type="text"] {
     background: var(--surface3); border: 1px solid var(--border2); border-radius: 7px;
@@ -371,42 +355,9 @@
   }
   .btn-close-help:hover { color: var(--text); background: var(--surface3); }
 
-  /* ── HOTKEY CONFIG ── */
-  .hotkey-section { padding: 0.85rem 1.25rem; background: var(--surface2); border-top: 1px solid var(--border); }
-  .hotkey-section-label { font-size: 0.75rem; font-weight: 500; color: var(--text2); letter-spacing: 0.05em; margin-bottom: 8px; }
-  .hotkey-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .hotkey-row:last-child { margin-bottom: 0; }
-  .hotkey-desc { font-size: 0.75rem; color: var(--text3); flex: 1; }
-  .hotkey-input {
-    background: var(--surface3); border: 1px solid var(--border2); border-radius: 6px;
-    color: var(--accent); font-family: 'DM Mono', monospace; font-size: 0.75rem;
-    height: 32px; width: 110px; padding: 0 8px; outline: none; text-align: center;
-    transition: border-color 0.2s; cursor: pointer; caret-color: transparent;
-    letter-spacing: 0.05em;
-  }
-  .hotkey-input:focus { border-color: var(--accent2); background: var(--surface); }
-  .hotkey-input.recording { border-color: var(--warn); color: var(--warn); animation: blink 0.6s infinite; }
-  .hotkey-hint { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
-  .hotkey-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .hotkey-toggle-label { font-size: 0.75rem; color: var(--text2); }
-  .toggle-switch { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0; background: var(--border2); border-radius: 18px;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute;
-    width: 12px; height: 12px; left: 3px; top: 3px;
-    background: var(--text3); border-radius: 50%; transition: all 0.2s;
-  }
-  .toggle-switch input:checked + .toggle-slider { background: var(--ok); }
-  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(14px); background: #fff; }
-
   /* ── NARROW / MOBILE ── */
   @media (max-width: 600px) {
     .app-body { flex-direction: column; }
-
     .log-wrap {
       width: 100% !important; max-width: 100% !important;
       height: 100px; flex-shrink: 0;
@@ -415,29 +366,22 @@
     }
     .log-resizer { display: none; }
     .log-box { font-size: 0.75rem; }
-
     .main { padding: 0.75rem; gap: 0.6rem; justify-content: flex-start; padding-top: 0.9rem; }
-
     .page-btn { padding: 1.3rem 0.75rem; }
     .page-btn .arrow { font-size: 2.6rem; }
-    .page-btn .kbd { display: none; }
-
     .topbar { padding: 0.5rem 0.75rem; }
     .topbar h1 { font-size: 0.9rem; }
     .conn-badge { font-size: 0.75rem; }
     .topbar-btn { font-size: 0.75rem; height: 26px; padding: 0 8px; }
-
     .action-btn { padding: 0.85rem 0.4rem; }
     .action-btn svg { width: 18px; height: 18px; }
     .action-btn span { font-size: 0.75rem; }
   }
 
-  /* Janela estreita desktop (minimizada lateral) */
   @media (min-width: 601px) and (max-width: 750px) {
     .log-wrap { width: 160px; }
     .main { padding: 0.75rem; }
     .page-btn { padding: 1.2rem 0.6rem; }
-    .page-btn .kbd { display: none; }
   }
 
   @media (max-width: 380px) {
@@ -477,8 +421,6 @@
       </button>
     </div>
 
-    <div class="cors-warn" id="cors-warn"></div>
-
     <div class="page-controls">
       <button class="page-btn" id="btn-prev" onclick="doPrevPage()">
         <span class="arrow">←</span>
@@ -491,14 +433,14 @@
     </div>
 
     <div class="action-row">
-      <button class="action-btn" onclick="sendXHR('/event/FullRefresh','Atualizar tela')">
+      <button class="action-btn" onclick="sendAction('/event/FullRefresh','Atualizar tela')">
         <svg viewBox="0 0 24 24">
           <polyline points="23 4 23 10 17 10"/>
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
         <span>Atualizar tela</span>
       </button>
-      <button class="action-btn" onclick="sendXHR('/UIManager/restartKOReader/','Reiniciar app')">
+      <button class="action-btn" onclick="sendAction('/UIManager/restartKOReader/','Reiniciar app')">
         <svg viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/>
           <polygon points="10 8 16 12 10 16 10 8"/>
@@ -560,13 +502,7 @@
       </div>
     </div>
     <div class="modal-conn">
-      <div class="modal-conn-label">
-        Kindle IP &amp; Porta
-        <span class="ip-tip" title="No Kindle: Menu (engrenagem) → Rede → Informações de rede">
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
-          <span class="ip-tip-bubble">IP disponível em: Menu (engrenagem) → Rede → Informações de rede</span>
-        </span>
-      </div>
+      <div class="modal-conn-label">Kindle IP &amp; Porta</div>
       <div class="modal-input-row">
         <input type="text" id="ip" placeholder="192.168.1.100" autocomplete="off" spellcheck="false" inputmode="url"/>
         <div class="port-wrap">
@@ -587,7 +523,7 @@
   <div class="help-modal">
     <div class="help-modal-body">
       <h2>Ajuda &amp; Solução de Problemas</h2>
-      <p class="help-subtitle">Dicas para Firefox e funcionalidades do site</p>
+      <p class="help-subtitle">Dicas para compatibilidade com browsers</p>
 
       <div class="help-section">
         <div class="help-section-title">🔧 Firefox — Liberar Mixed Content (HTTPS → HTTP)</div>
@@ -629,6 +565,7 @@
           Nesse modo, Mixed Content não existe — funciona 100% em qualquer browser.
         </p>
       </div>
+
     </div>
     <div class="help-modal-footer">
       <button class="btn-close-help" onclick="closeHelp()">Fechar</button>
@@ -638,13 +575,15 @@
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-// XHR é usado pois o KOReader usa servidor TCP minimalista sem headers CORS.
-// fetch() moderno bloqueia por falta de CORS headers.
-// MIXED CONTENT: política do browser, sem solução de código. Use file://.
+// KOReader Remote — controle remoto de páginas via HTTP Inspector
+// XHR é usado pois o servidor do KOReader não envia headers CORS.
+// MIXED CONTENT: use file:// para evitar bloqueios do browser.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const isHttps = location.protocol === 'https:';
+const LOG_MAX = 120; // máximo de linhas no log
 
+// ── INIT ──────────────────────────────────────────────────────────────────────
 (function init() {
   const ip   = localStorage.getItem('kr_ip');
   const port = localStorage.getItem('kr_port');
@@ -652,9 +591,9 @@ const isHttps = location.protocol === 'https:';
   if (port) document.getElementById('port').value = port;
   if (ip) updateBadge('idle', ip);
   else openModal();
-  loadHotkeySettings();
 })();
 
+// ── MODAIS ────────────────────────────────────────────────────────────────────
 function openModal()  { document.getElementById('overlay').classList.add('open'); }
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
@@ -662,6 +601,7 @@ function openHelp()  { document.getElementById('help-overlay').classList.add('op
 function closeHelp() { document.getElementById('help-overlay').classList.remove('open'); }
 function helpOverlayClick(e) { if (e.target === document.getElementById('help-overlay')) closeHelp(); }
 
+// ── ENDPOINT ──────────────────────────────────────────────────────────────────
 function saveEndpoint() {
   const ip   = document.getElementById('ip').value.trim();
   const port = document.getElementById('port').value.trim() || '8081';
@@ -685,14 +625,18 @@ function updateBadge(state, label) {
 
 function base() {
   const ip   = localStorage.getItem('kr_ip')   || '';
-  const port = localStorage.getItem('kr_port')  || '8081';
+  const port = localStorage.getItem('kr_port') || '8081';
   return 'http://' + ip + ':' + port + '/koreader';
 }
 
+// ── LOG ───────────────────────────────────────────────────────────────────────
 function log(msg, cls) {
   const box = document.getElementById('log');
   const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // Remove mensagem inicial "aguardando"
   if (box.children.length === 1 && box.children[0].textContent.includes('aguardando')) box.innerHTML = '';
+  // Limita o número de linhas para não acumular memória
+  while (box.children.length >= LOG_MAX) box.removeChild(box.firstChild);
   const line = document.createElement('div');
   line.className = 'log-line';
   line.innerHTML = '<span class="t">' + now + '</span><span class="' + (cls||'') + '">' + msg + '</span>';
@@ -700,7 +644,9 @@ function log(msg, cls) {
   box.scrollTop = box.scrollHeight;
 }
 
-// ── CORE XHR ─────────────────────────────────────────────────────────────────
+// ── CORE XHR ──────────────────────────────────────────────────────────────────
+// FIX: readyState === 4 garante que a resposta foi completamente recebida
+// antes de considerar sucesso. readyState >= 2 era prematuro.
 function sendXHR(path, label, onDone) {
   const ip = localStorage.getItem('kr_ip');
   if (!ip) { openModal(); return; }
@@ -713,18 +659,17 @@ function sendXHR(path, label, onDone) {
     if (done) return;
     done = true;
     xhr.abort();
-    log((label || path) + ' — enviado, sem resposta (timeout)', 'err');
+    log((label || path) + ' — enviado, sem resposta (timeout)', 'warn');
     if (onDone) onDone(false);
-  }, 2500);
+  }, 3000);
 
   xhr.onreadystatechange = function() {
-    if (done) return;
-    if (xhr.readyState >= 2) {
-      done = true;
-      clearTimeout(timeout);
-      log((label || path) + ' — recebido · OK (' + (xhr.status || '?') + ')', 'ok');
-      if (onDone) onDone(true);
-    }
+    if (done || xhr.readyState !== 4) return;
+    done = true;
+    clearTimeout(timeout);
+    // KOReader retorna qualquer status como sucesso de comunicação
+    log((label || path) + ' — OK (' + (xhr.status || '?') + ')', 'ok');
+    if (onDone) onDone(true);
   };
 
   xhr.onerror = function() {
@@ -747,9 +692,18 @@ function sendXHR(path, label, onDone) {
   }
 }
 
+// Ação genérica (botões de ação que não mudam estado de conexão)
+function sendAction(path, label) {
+  sendXHR(path, label);
+}
+
 // ── CONEXÃO ───────────────────────────────────────────────────────────────────
-let connState = 'idle'; // 'idle' | 'ok' | 'failed'
-let pollTimer = null;
+// FIX PRINCIPAL: Removido o polling automático (silentPing a cada 8s).
+// O silentPing usava /event/GotoViewRel/0 que o KOReader interpretava como
+// comando de navegação, causando loop de refresh de tela no dispositivo
+// e consumo excessivo de bateria. Agora a conexão é verificada apenas
+// quando o usuário clica em "Conectar".
+let connState = 'idle';
 
 function setConnState(state, ip) {
   connState = state;
@@ -770,119 +724,24 @@ function setConnState(state, ip) {
   }
 }
 
-function startPolling() {
-  stopPolling();
-  pollTimer = setInterval(function() {
-    silentPing();
-  }, 8000); // verifica a cada 8s
-}
-
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
-
-// Ping silencioso (sem log) para manter o estado atualizado
-function silentPing() {
-  const ip = localStorage.getItem('kr_ip');
-  if (!ip) return;
-  const xhr = new XMLHttpRequest();
-  const url = base() + '/event/GotoViewRel/0';
-  let done = false;
-  const timeout = setTimeout(function() {
-    if (done) return;
-    done = true;
-    xhr.abort();
-    if (connState === 'ok') {
-      log('ping — conexão perdida (timeout)', 'warn');
-      setConnState('failed', ip);
-    }
-  }, 2500);
-  xhr.onreadystatechange = function() {
-    if (done) return;
-    if (xhr.readyState >= 2) {
-      done = true;
-      clearTimeout(timeout);
-      if (connState !== 'ok') {
-        log('ping — reconectado · OK (' + (xhr.status || '?') + ')', 'ok');
-        setConnState('ok', ip);
-      }
-    }
-  };
-  xhr.onerror = function() {
-    if (done) return;
-    done = true;
-    clearTimeout(timeout);
-    if (connState === 'ok') {
-      const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
-      log('ping — conexão perdida: ' + reason, 'warn');
-      setConnState('failed', ip);
-    }
-  };
-  try { xhr.open('GET', url, true); xhr.send(); } catch(e) {
-    done = true; clearTimeout(timeout);
-    if (connState === 'ok') { log('ping — exceção: ' + e.message, 'warn'); setConnState('failed', ip); }
-  }
-}
-
 function testConnection() {
   const ip = localStorage.getItem('kr_ip');
   if (!ip) { openModal(); return; }
+
   const btn = document.getElementById('btn-connect');
   const lbl = document.getElementById('connect-label');
   btn.className = 'btn-connect connecting';
   lbl.textContent = 'Conectando...';
   log('⟳ testando ' + ip + '…');
 
-  const xhr = new XMLHttpRequest();
-  const url = base() + '/event/GotoViewRel/0';
-  let done = false;
-
-  const timeout = setTimeout(function() {
-    if (done) return;
-    done = true;
-    xhr.abort();
-    log('ping — sem resposta (timeout)', 'err');
-    setConnState('failed', ip);
-    stopPolling();
-  }, 2500);
-
-  xhr.onreadystatechange = function() {
-    if (done) return;
-    if (xhr.readyState >= 2) {
-      done = true;
-      clearTimeout(timeout);
-      log('ping — recebido · OK (' + (xhr.status || '?') + ')', 'ok');
-      setConnState('ok', ip);
-      startPolling();
-    }
-  };
-
-  xhr.onerror = function() {
-    if (done) return;
-    done = true;
-    clearTimeout(timeout);
-    const reason = isHttps ? 'Mixed Content (use file://)' : 'sem resposta — verifique IP/porta';
-    log('ping — erro: ' + reason, 'err');
-    setConnState('failed', ip);
-    stopPolling();
-  };
-
-  try {
-    xhr.open('GET', url, true);
-    xhr.send();
-  } catch(e) {
-    done = true;
-    clearTimeout(timeout);
-    log('ping — exceção: ' + e.message, 'err');
-    setConnState('failed', ip);
-    stopPolling();
-  }
+  // Usamos GotoViewRel/0 para o teste — é o único "ping" disponível no
+  // HTTP Inspector do KOReader. Uma única chamada manual não causa loop.
+  sendXHR('/event/GotoViewRel/0', 'ping', function(ok) {
+    setConnState(ok ? 'ok' : 'failed', ip);
+  });
 }
 
 // ── PÁGINAS ───────────────────────────────────────────────────────────────────
-function nextPage() { doNextPage(); }
-function prevPage() { doPrevPage(); }
-
 function flash(id) {
   const el = document.getElementById(id);
   el.classList.remove('flash');
@@ -890,125 +749,18 @@ function flash(id) {
   el.classList.add('flash');
 }
 
-// ── ATALHOS GLOBAIS ───────────────────────────────────────────────────────────
-let hotkeyNext = { key: 'D', shift: true, ctrl: false, alt: false };
-let hotkeyPrev = { key: 'S', shift: true, ctrl: false, alt: false };
-let returnAfterPage = false;
-let recordingTarget = null; // 'next' | 'prev'
-
-function hotkeyToString(h) {
-  const parts = [];
-  if (h.ctrl)  parts.push('Ctrl');
-  if (h.alt)   parts.push('Alt');
-  if (h.shift) parts.push('Shift');
-  parts.push(h.key.length === 1 ? h.key.toUpperCase() : h.key);
-  return parts.join('+');
-}
-
-function hotkeyMatches(e, h) {
-  // Normaliza: Shift+D gera e.key='D', mas sem shift seria 'd'
-  const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
-  return k === h.key.toUpperCase()
-    && !!e.shiftKey === h.shift
-    && !!e.ctrlKey  === h.ctrl
-    && !!e.altKey   === h.alt;
-}
-
-function updateKbdLabels() {
-  const nEl = document.getElementById('kbd-next');
-  const pEl = document.getElementById('kbd-prev');
-  if (nEl) nEl.textContent = hotkeyToString(hotkeyNext);
-  if (pEl) pEl.textContent = hotkeyToString(hotkeyPrev);
-}
-
-function loadHotkeySettings() {
-  try {
-    const n = localStorage.getItem('kr_hotkey_next');
-    const p = localStorage.getItem('kr_hotkey_prev');
-    const r = localStorage.getItem('kr_hotkey_return');
-    if (n) hotkeyNext = JSON.parse(n);
-    if (p) hotkeyPrev = JSON.parse(p);
-    returnAfterPage = r === 'true';
-  } catch(ex) {}
-  const ni = document.getElementById('hotkey-next');
-  const pi = document.getElementById('hotkey-prev');
-  if (ni) ni.value = hotkeyToString(hotkeyNext);
-  if (pi) pi.value = hotkeyToString(hotkeyPrev);
-  const tog = document.getElementById('toggle-return');
-  if (tog) tog.checked = returnAfterPage;
-  updateKbdLabels();
-}
-
-function saveHotkeySettings() {
-  returnAfterPage = document.getElementById('toggle-return').checked;
-  localStorage.setItem('kr_hotkey_next',   JSON.stringify(hotkeyNext));
-  localStorage.setItem('kr_hotkey_prev',   JSON.stringify(hotkeyPrev));
-  localStorage.setItem('kr_hotkey_return', String(returnAfterPage));
-}
-
-// Recording: ao clicar no campo, ativa modo captura.
-// Um keydown no document captura a próxima tecla não-modificadora.
-function startRecording(el, target) {
-  // Cancela qualquer recording anterior
-  if (recordingTarget) cancelRecording();
-  recordingTarget = target;
-  el.classList.add('recording');
-  el.value = 'Pressione a tecla…';
-  el.dataset.recording = '1';
-}
-
-function cancelRecording() {
-  if (!recordingTarget) return;
-  const id = recordingTarget === 'next' ? 'hotkey-next' : 'hotkey-prev';
-  const h  = recordingTarget === 'next' ? hotkeyNext : hotkeyPrev;
-  const el = document.getElementById(id);
-  if (el) { el.classList.remove('recording'); el.value = hotkeyToString(h); delete el.dataset.recording; }
-  recordingTarget = null;
-}
-
 function doNextPage() {
   flash('btn-next');
-  sendXHR('/event/GotoViewRel/1', 'próxima página', function() {
-    if (returnAfterPage) setTimeout(function() { window.blur(); }, 150);
-  });
+  sendXHR('/event/GotoViewRel/1', 'próxima página');
 }
 
 function doPrevPage() {
   flash('btn-prev');
-  sendXHR('/event/GotoViewRel/-1', 'página anterior', function() {
-    if (returnAfterPage) setTimeout(function() { window.blur(); }, 150);
-  });
+  sendXHR('/event/GotoViewRel/-1', 'página anterior');
 }
 
-// ── TECLADO ───────────────────────────────────────────────────────────────────
+// ── TECLADO (setas apenas) ────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
-  // ── Modo gravação de atalho ──
-  if (recordingTarget) {
-    e.preventDefault();
-    e.stopPropagation();
-    const ignored = ['Shift','Control','Alt','Meta','CapsLock','Tab','Escape'];
-    if (e.key === 'Escape') { cancelRecording(); return; }
-    if (ignored.includes(e.key)) return;
-
-    const h = {
-      key:   e.key.length === 1 ? e.key.toUpperCase() : e.key,
-      shift: e.shiftKey,
-      ctrl:  e.ctrlKey,
-      alt:   e.altKey
-    };
-    const id = recordingTarget === 'next' ? 'hotkey-next' : 'hotkey-prev';
-    if (recordingTarget === 'next') hotkeyNext = h;
-    else                            hotkeyPrev = h;
-
-    const el = document.getElementById(id);
-    if (el) { el.value = hotkeyToString(h); el.classList.remove('recording'); delete el.dataset.recording; }
-    recordingTarget = null;
-    saveHotkeySettings();
-    updateKbdLabels();
-    return;
-  }
-
-  // ── Modais abertos: só Escape ──
   if (document.getElementById('overlay').classList.contains('open')) {
     if (e.key === 'Escape') closeModal();
     return;
@@ -1017,22 +769,9 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeHelp();
     return;
   }
-
-  // ── Atalhos configurados ──
-  if (hotkeyMatches(e, hotkeyNext)) { e.preventDefault(); doNextPage(); return; }
-  if (hotkeyMatches(e, hotkeyPrev)) { e.preventDefault(); doPrevPage(); return; }
-
-  // ── Setas sempre funcionam ──
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); doNextPage(); }
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); doPrevPage(); }
 });
-  // Posiciona o tooltip do IP dinamicamente para não cortar no modal
-  document.querySelector('.ip-tip').addEventListener('mouseenter', function() {
-    const bubble = this.querySelector('.ip-tip-bubble');
-    const rect = this.getBoundingClientRect();
-    bubble.style.top  = (rect.top - bubble.offsetHeight - 8) + 'px';
-    bubble.style.left = Math.max(8, rect.left - 80) + 'px';
-  });
 
 // ── LOG RESIZE ────────────────────────────────────────────────────────────────
 (function() {
@@ -1042,70 +781,46 @@ document.addEventListener('keydown', function(e) {
 
   const MIN_W = 120;
   const MAX_W = 600;
-  function effectiveMaxW() { return Math.min(MAX_W, Math.floor(document.body.clientWidth * 0.6)); }
   const STORAGE_KEY = 'kr_log_width';
 
-  // Restore saved width
+  function effectiveMaxW() { return Math.min(MAX_W, Math.floor(document.body.clientWidth * 0.6)); }
+
   const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
-  if (saved && saved >= MIN_W && saved <= MAX_W) {
-    wrap.style.width = saved + 'px';
-  }
+  if (saved && saved >= MIN_W && saved <= MAX_W) wrap.style.width = saved + 'px';
 
-  let dragging = false;
-  let startX = 0;
-  let startW = 0;
+  let dragging = false, startX = 0, startW = 0;
 
-  resizer.addEventListener('mousedown', function(e) {
+  function startDrag(x) {
     dragging = true;
-    startX = e.clientX;
+    startX = x;
     startW = wrap.getBoundingClientRect().width;
     resizer.classList.add('dragging');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-    e.preventDefault();
-  });
+  }
 
-  document.addEventListener('mousemove', function(e) {
+  function moveDrag(x) {
     if (!dragging) return;
-    // Log is on the right, dragging left = wider
-    const delta = startX - e.clientX;
-    const newW  = Math.min(effectiveMaxW(), Math.max(MIN_W, startW + delta));
+    const newW = Math.min(effectiveMaxW(), Math.max(MIN_W, startW + (startX - x)));
     wrap.style.width = newW + 'px';
-  });
+  }
 
-  document.addEventListener('mouseup', function() {
+  function endDrag() {
     if (!dragging) return;
     dragging = false;
     resizer.classList.remove('dragging');
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
-    const currentW = Math.round(wrap.getBoundingClientRect().width);
-    localStorage.setItem(STORAGE_KEY, currentW);
-  });
+    localStorage.setItem(STORAGE_KEY, Math.round(wrap.getBoundingClientRect().width));
+  }
 
-  // Touch support
-  resizer.addEventListener('touchstart', function(e) {
-    dragging = true;
-    startX = e.touches[0].clientX;
-    startW = wrap.getBoundingClientRect().width;
-    resizer.classList.add('dragging');
-    e.preventDefault();
-  }, { passive: false });
+  resizer.addEventListener('mousedown',  function(e) { startDrag(e.clientX); e.preventDefault(); });
+  document.addEventListener('mousemove', function(e) { moveDrag(e.clientX); });
+  document.addEventListener('mouseup',   endDrag);
 
-  document.addEventListener('touchmove', function(e) {
-    if (!dragging) return;
-    const delta = startX - e.touches[0].clientX;
-    const newW  = Math.min(effectiveMaxW(), Math.max(MIN_W, startW + delta));
-    wrap.style.width = newW + 'px';
-  }, { passive: true });
-
-  document.addEventListener('touchend', function() {
-    if (!dragging) return;
-    dragging = false;
-    resizer.classList.remove('dragging');
-    const currentW = Math.round(wrap.getBoundingClientRect().width);
-    localStorage.setItem(STORAGE_KEY, currentW);
-  });
+  resizer.addEventListener('touchstart', function(e) { startDrag(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function(e) { moveDrag(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('touchend',  endDrag);
 })();
 </script>
 </body>
