@@ -558,6 +558,30 @@
       </div>
 
       <div class="help-section">
+        <div class="help-section-title">📱 KDE Connect — Controle remoto de apresentações</div>
+        <p style="font-size:0.75rem;color:var(--text3);line-height:1.6;margin-bottom:0.5rem;">
+          O app envia <strong>PageDown / PageUp</strong> (próximo/anterior) e teclas de mídia. Este site escuta todos eles.
+        </p>
+        <div class="help-steps">
+          <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-content">No KDE Connect (PC), emparelhe o celular normalmente.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-content">No celular, abra <strong>Controle remoto de apresentações</strong>. O browser deve estar em foco no PC.</div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-content">Clique <strong>uma vez</strong> nos botões desta página para ativar o áudio silencioso — depois as teclas de mídia também funcionam com o browser em segundo plano.</div>
+          </div>
+        </div>
+        <div class="help-warn-box" style="border-color:rgba(201,169,110,0.25);background:rgba(201,169,110,0.05);color:var(--warn);">
+          <strong>💡 Dica:</strong> Se o browser estiver em <em>segundo plano</em>, use a opção <strong>"Controle de mídia"</strong> do KDE Connect (envia MediaNext/Prev) após clicar pelo menos uma vez nesta página.
+        </div>
+      </div>
+
+      <div class="help-section">
         <div class="help-section-title">⚡ Solução mais simples para tudo</div>
         <p style="font-size:0.75rem;color:var(--text2);line-height:1.7;">
           Abra o <span class="cmd">index.html</span> com duplo clique no explorador de arquivos.
@@ -759,7 +783,7 @@ function doPrevPage() {
   sendXHR('/event/GotoViewRel/-1', 'página anterior');
 }
 
-// ── TECLADO (setas apenas) ────────────────────────────────────────────────────
+// ── TECLADO (setas + PageDown/PageUp para KDE Connect Presentation Remote) ───
 document.addEventListener('keydown', function(e) {
   if (document.getElementById('overlay').classList.contains('open')) {
     if (e.key === 'Escape') closeModal();
@@ -769,9 +793,64 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeHelp();
     return;
   }
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); doNextPage(); }
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); doPrevPage(); }
+  // ArrowRight/Down e PageDown → próxima página (KDE Connect envia PageDown/PageUp)
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') {
+    e.preventDefault(); doNextPage();
+  }
+  // ArrowLeft/Up e PageUp → página anterior
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+    e.preventDefault(); doPrevPage();
+  }
 });
+
+// ── KDE CONNECT — Media Session API ──────────────────────────────────────────
+// O controle remoto de apresentações do KDE Connect pode enviar MediaNextTrack
+// e MediaPreviousTrack. A Media Session API intercepta esses eventos mesmo com
+// o browser em segundo plano (Android Chrome/Firefox).
+(function setupMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+
+  // É necessário um áudio em play para o sistema considerar a sessão ativa.
+  // Usamos um AudioContext com um nó silencioso — nenhum som é emitido.
+  var AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  var ctx, source, started = false;
+
+  function ensureAudio() {
+    if (started) return;
+    started = true;
+    try {
+      ctx = new AudioCtx();
+      // Oscilador silencioso: gain = 0, nunca emite som
+      var osc  = ctx.createOscillator();
+      var gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+    } catch(e) { /* AudioContext não disponível */ }
+  }
+
+  // Ativa o áudio silencioso na primeira interação do usuário
+  document.addEventListener('click',     ensureAudio, { once: true });
+  document.addEventListener('touchstart', ensureAudio, { once: true });
+  document.addEventListener('keydown',    ensureAudio, { once: true });
+
+  navigator.mediaSession.setActionHandler('nexttrack', function() {
+    doNextPage();
+  });
+  navigator.mediaSession.setActionHandler('previoustrack', function() {
+    doPrevPage();
+  });
+  // Alguns controles enviam seekforward/seekbackward
+  navigator.mediaSession.setActionHandler('seekforward', function() {
+    doNextPage();
+  });
+  navigator.mediaSession.setActionHandler('seekbackward', function() {
+    doPrevPage();
+  });
+})();
 
 // ── LOG RESIZE ────────────────────────────────────────────────────────────────
 (function() {
