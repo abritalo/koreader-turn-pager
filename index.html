@@ -591,6 +591,14 @@ const LOG_MAX = 120; // máximo de linhas no log
   if (port) document.getElementById('port').value = port;
   if (ip) updateBadge('idle', ip);
   else openModal();
+
+  // Enter nos campos de IP e Porta confirma salvar endpoint
+  document.getElementById('ip').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveEndpoint(); }
+  });
+  document.getElementById('port').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveEndpoint(); }
+  });
 })();
 
 // ── MODAIS ────────────────────────────────────────────────────────────────────
